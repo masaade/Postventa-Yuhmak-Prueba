@@ -1,0 +1,13 @@
+YUHMAK POSTVENTA 055 - PRUEBA CLOUD (NO PRIVADA)
+
+ATENCIÓN: este paquete es exclusivamente una prueba técnica.
+NO subir Excel de SAP ni información real o confidencial.
+La app no tiene autenticación. Cualquier persona con el enlace puede acceder.
+Los archivos y las consultas pueden perderse al reiniciarse el servidor.
+
+PARA PUBLICAR
+1. En GitHub, subir app.py y requirements.txt a un repositorio destinado exclusivamente a la prueba (no sobrescribir la V17 privada).
+2. En Streamlit Community Cloud, seleccionar ese repositorio, rama main, archivo app.py.
+3. Pulsar Deploy.
+
+La V17 privada original NO fue modificada. La versión definitiva requiere configurar OAuth de Google y una base/almacenamiento persistente.

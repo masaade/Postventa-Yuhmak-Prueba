@@ -1,0 +1,27 @@
+YUHMAK POSTVENTA 055 — V17 PRIVADA
+
+Administrador inicial: msaade@yuhmak.com
+Dominio: @yuhmak.com; además se requiere autorización individual.
+
+CONTENIDO
+- app.py: V16 conservada, con login Google, roles, consultas y respuestas.
+- requirements.txt: dependencias.
+- render.yaml: ejemplo de alojamiento Render con disco persistente (plan pago).
+- start_render.sh: arranque que configura OAuth a partir de variables de entorno.
+
+DESPLIEGUE
+1. Crear un repositorio PRIVADO en GitHub con estos archivos. NO incluir Excel de SAP ni secretos.
+2. Crear servicio en Render mediante render.yaml; requiere plan con disco persistente.
+3. En Google Cloud Console, con aprobación del administrador de Workspace si corresponde, crear OAuth Client ID tipo Web application. Configurar el redirect URI https://TU-DOMINIO/oauth2callback. Configurar la pantalla de consentimiento para uso interno si la organización lo permite.
+4. En Render configurar GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, PUBLIC_URL=https://TU-DOMINIO; COOKIE_SECRET es autogenerado.
+5. La cuenta msaade@yuhmak.com entra primero, sube los cinco Excel y autoriza a Gerencia desde la barra lateral.
+6. Hacer pruebas con usuario autorizado y no autorizado ANTES de publicar información real.
+
+SEGURIDAD Y LIMITACIONES
+- No subir datos SAP reales hasta validar el hosting, contratos y autorización corporativa.
+- SQLite y archivos Excel se guardan en el disco persistente configurado; programar backups fuera del servidor.
+- Las consultas quedan registradas en el portal. La V17 NO envía correos de notificación automáticos todavía.
+- No hay acceso a SAP en vivo; el administrador actualiza manualmente los cinco Excel.
+- El administrador inicial se inserta automáticamente; no se puede revocar desde la interfaz.
+- Para varios servidores o gran cantidad de usuarios, migrar SQLite a PostgreSQL.
+- Google verifica identidad; el dominio y la lista de autorizados se verifican adicionalmente en la app.
