@@ -1,0 +1,18 @@
+YUHMAK | Postventa + Administración (prueba online)
+
+Subir app.py y administracion.py al repositorio que ya tiene publicada la aplicación.
+Mantener requirements.txt existente.
+En Streamlit aparecerá un selector lateral «Módulo»: Postventa / Administración.
+Administración permite cargar EERR por Sucursal.xlsx en cada sesión; el archivo no se incluye en este paquete.
+
+REGLAS DE CÁLCULO
+- Ventas: línea Ventas, columna RN del mes.
+- Gastos: cuentas individuales con importe negativo en RN; se excluyen costo de ventas, ingresos y subtotales.
+- Top 10 por Cuenta por Area, con importe y gasto / ventas.
+- Centros de costos: 13 sucursales + CD + Áreas Centrales Hogar.
+- Distribución: porcentajes sobre el gasto distribuido en centros, con conciliación contra RN.
+- «Expensas Hogar» en encabezados de meses anteriores NO equivale a «Áreas Centrales Hogar» y no se asigna automáticamente.
+- Los conceptos de gasto llamados «Expensas Hogar» sí se mantienen como gastos cuando corresponda.
+- Cifras negativas del EERR se muestran como magnitudes positivas. Los abonos/recuperos positivos no se netean.
+
+ATENCIÓN: El sitio de prueba es público. NO cargar datos reales de SAP en esa dirección hasta proteger el acceso.

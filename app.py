@@ -13,6 +13,12 @@ from reportlab.lib.enums import TA_CENTER
 from reportlab.lib.units import cm
 
 st.set_page_config(page_title='Postventa 055 | Informe de gestión',layout='wide',page_icon='📊')
+import administracion
+modulo=st.sidebar.radio('Módulo', ['Postventa','Administración'], key='modulo_principal')
+if modulo=='Administración':
+ administracion.render()
+ st.stop()
+
 BASE=Path(__file__).resolve().parent
 DATA=Path(os.environ.get('YUHMAK_DATA_DIR',str(BASE/'datos'))); DATA.mkdir(parents=True,exist_ok=True)
 SOURCES={'stock':'STOCK 055','out':'Solicitud de Traslado 055','back':'Solicitud de Traslado 109','nc':'Notas de Credito 055'}
