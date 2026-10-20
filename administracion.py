@@ -14,7 +14,7 @@ def norm(s):
 
 def centro(s):
  n=norm(s)
- if 'central' in n and 'hogar' in n:return 'Areas Centrales Hogar'
+ if ('central' in n and 'hogar' in n) or n=='expensas hogar':return 'Areas Centrales Hogar'
  if n=='cd':return 'CD'
  for c in CENTROS[:13]:
   if norm(c)==n:return c
@@ -36,8 +36,7 @@ def leer(datos):
   disponibles={v for v in mapa.values() if v}
   faltantes=[c for c in CENTROS if c not in disponibles]
   if faltantes:avisos.append(f'{MESES[m]}: no figuran como centros de costos: {", ".join(faltantes)}.')
-  ignorados=[c for c in cols[4:] if not mapa[c] and 'expensa' in norm(c)]
-  if ignorados:avisos.append(f'{MESES[m]}: columna {", ".join(ignorados)} no asignada a Áreas Centrales (son conceptos distintos).')
+  # 'Expensas Hogar' (enero-mayo) y 'Areas Centrales Hogar' (junio-agosto) son el mismo centro de costos.
   bloque=''
   for _,r in df.iterrows():
    nom=str(r[cuenta]).strip()
@@ -117,4 +116,4 @@ def render():
   for a in sorted(set(avisos)):st.warning(a)
   st.write('Conciliación por mes (gastos de las cuentas seleccionadas)')
   st.dataframe(conc[conc.Mes.isin(sel)].style.format({'RN gastos':money,'Centros de costos':money,'Diferencia':money}),hide_index=True,use_container_width=True)
-  st.caption('El porcentaje por centro de costos utiliza como denominador el total distribuido en centros; si difiere del RN, se informa la diferencia. Las columnas históricas «Expensas Hogar» no se equiparan a «Áreas Centrales Hogar».')
+  st.caption('El porcentaje por centro de costos utiliza como denominador el total distribuido en centros; si difiere del RN, se informa la diferencia. Las columnas «Expensas Hogar» y «Áreas Centrales Hogar» se unifican como un único centro de costos.')

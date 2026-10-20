@@ -1,0 +1,7 @@
+ADMINISTRACION V2 - CORRECCION DE CENTRO DE COSTOS
+
+Se unifican las columnas historicas Expensas Hogar (enero-mayo) y Areas Centrales Hogar (junio-agosto) bajo Areas Centrales Hogar.
+
+En GitHub reemplazar administracion.py por este archivo. No es necesario reemplazar app.py ni requirements.txt.
+
+No cargar datos contables reales en una aplicacion publica sin control de acceso.
