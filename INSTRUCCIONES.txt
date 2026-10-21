@@ -1,0 +1,1 @@
+Subir solamente app.py a GitHub > Postventa-Yuhmak-Prueba > Agregar archivo > Cargar archivos. Mantener administracion.py V3 sin cambios. La aplicacion sigue siendo publica; no cargar datos confidenciales.

@@ -384,7 +384,6 @@ def db_conn():
  return c
 email=ADMIN_EMAIL
 role='admin'
-st.error('VERSIÓN DE PRUEBA PÚBLICA · SIN CONTROL DE ACCESO. NO CARGAR EXCEL DE SAP NI INFORMACIÓN CONFIDENCIAL.')
 st.info('Solo para verificar que el tablero puede abrirse online. El almacenamiento de esta prueba es temporal.')
 with st.sidebar:
  st.caption('PRUEBA CLOUD · SIN LOGIN')
