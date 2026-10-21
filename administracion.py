@@ -148,14 +148,17 @@ def render():
  if tabla.empty or ventas.empty:st.warning('No se encontraron gastos o ventas válidos en las hojas mensuales.');return
  meses=list(ventas['Mes'].drop_duplicates())
  nombres=[MESES[m] for m in meses]
- if 'admin_meses_v4' not in st.session_state:st.session_state['admin_meses_v4']=nombres.copy()
- st.session_state['admin_meses_v4']=[m for m in st.session_state['admin_meses_v4'] if m in nombres]
- st.markdown('**Meses incluidos en el reporte (activar o desactivar)**')
- st.caption('Podés activar o desactivar cada mes individualmente. Los gráficos, indicadores y PDF se recalculan con los meses elegidos.')
- bt1,bt2,_=st.columns([1,1,3])
- if bt1.button('Seleccionar todos',key='admin_todos_v4'):st.session_state['admin_meses_v4']=nombres.copy()
- if bt2.button('Quitar todos',key='admin_ninguno_v4'):st.session_state['admin_meses_v4']=[]
- sel=st.multiselect('Elegir meses',nombres,key='admin_meses_v4')
+ st.markdown('**Períodos a analizar**')
+ st.caption('Abrí el desplegable para activar o desactivar meses individualmente.')
+ with st.expander('Seleccionar meses', expanded=False):
+  seleccionados=[]
+  cols_mes=st.columns(4)
+  for i, nombre in enumerate(nombres):
+   with cols_mes[i % 4]:
+    if st.checkbox(nombre, value=True, key='admin_mes_v6_'+nombre):
+     seleccionados.append(nombre)
+ sel=seleccionados
+ st.caption('Meses activos: '+(', '.join(sel) if sel else 'ninguno'))
  elegidos=[m for m in meses if MESES[m] in sel]
  if not elegidos:st.warning('Seleccioná al menos un mes.');return
  t=tabla[tabla.Mes.isin(elegidos)];v=ventas[ventas.Mes.isin(elegidos)]['Ventas'].sum()
@@ -167,8 +170,9 @@ def render():
  st.caption('Gastos analizados: suma de cuentas de egreso con saldo negativo, sin costo de mercadería vendida, ingresos ni subtotales. No equivale necesariamente al total contable neto de gastos.')
  st.subheader('Top 10 · categorías de gasto')
  st.dataframe(top.rename(columns={'Categoría':'Concepto','Gasto':'Importe ($)'}).style.format({'Importe ($)':money,'% sobre ventas':pct}),hide_index=True,use_container_width=True)
+ orden_top=top.sort_values('Gasto',ascending=False)['Categoría'].tolist()
  graf_top=alt.Chart(top).mark_bar().encode(
-  y=alt.Y('Categoría:N',sort=alt.SortField(field='Gasto',order='descending'),title=None),
+  y=alt.Y('Categoría:N',sort=orden_top,title=None),
   x=alt.X('Gasto:Q',title='Importe del gasto ($)'),
   tooltip=['Categoría:N',alt.Tooltip('Gasto:Q',format=',.0f'),alt.Tooltip('% sobre ventas:Q',format='.2f')]
  ).properties(height=360)
@@ -187,8 +191,9 @@ def render():
  mostrar=det[['Centro','Gasto','% sobre ventas sucursal']].rename(columns={'Centro':'Sucursal / centro de costos','Gasto':'Importe ($)','% sobre ventas sucursal':'% sobre ventas del centro'})
  st.dataframe(mostrar.style.format({'Importe ($)':money,'% sobre ventas del centro':lambda x:pct(x) if pd.notna(x) else 'Sin ventas'}),hide_index=True,use_container_width=True)
  st.caption('Incidencia por centro = gasto del concepto / ventas del mismo centro. Sin ventas: N/D.')
+ orden_centros=det.sort_values('Gasto',ascending=False)['Centro'].tolist()
  graf_det=alt.Chart(det).mark_bar().encode(
-  y=alt.Y('Centro:N',sort=alt.SortField(field='Gasto',order='descending'),title=None),
+  y=alt.Y('Centro:N',sort=orden_centros,title=None),
   x=alt.X('Gasto:Q',title='Importe del gasto ($)'),
   tooltip=['Centro:N',alt.Tooltip('Gasto:Q',format=',.0f'),alt.Tooltip('% sobre ventas sucursal:Q',format='.2f')]
  ).properties(height=480)

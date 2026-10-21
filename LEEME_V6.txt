@@ -1,0 +1,1 @@
+V6: selector desplegable con casillas individuales por mes; unicamente porcentaje sobre ventas, sin porcentaje sobre gasto total; graficos Top 10 y centros de costos ordenados de mayor a menor importe. Reemplazar administracion.py en GitHub.
