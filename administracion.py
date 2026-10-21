@@ -1,4 +1,10 @@
 import io
+from xml.sax.saxutils import escape
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, KeepTogether
+from reportlab.lib import colors
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.enums import TA_CENTER
+from reportlab.lib.units import cm
 import pandas as pd
 import streamlit as st
 
@@ -74,6 +80,56 @@ def leer(datos):
  tabla=pd.DataFrame(registros,columns=['Mes','Bloque','Cuenta','Categoría','Centro','Gasto'])
  return tabla,pd.DataFrame(ventas,columns=['Mes','Ventas']),avisos,pd.DataFrame(diferencias,columns=['Mes','RN gastos','Centros de costos','Diferencia'])
 
+def resumen_ejecutivo(top, det, ventas_total, gastos_total, concepto, rn, dist, meses_sel):
+    lider=top.iloc[0] if not top.empty else None
+    mayor=det.iloc[0] if not det.empty else None
+    participacion=gastos_total/ventas_total*100 if ventas_total else 0
+    top_suma=top.Gasto.sum() if not top.empty else 0
+    lineas=[
+      f"Período analizado: {', '.join(meses_sel)}. Ventas acumuladas: {money(ventas_total)}. Gastos analizados: {money(gastos_total)}, equivalentes al {pct(participacion)} de las ventas.",
+      (f"El principal concepto de gasto es {lider['Categoría']}, con {money(lider['Gasto'])} y una incidencia del {pct(lider['% sobre ventas'])} sobre las ventas." if lider is not None else 'No se identificaron conceptos de gasto.'),
+      f"Los diez principales conceptos concentran el {pct(top_suma/gastos_total*100 if gastos_total else 0)} de los gastos analizados.",
+      (f"Para el gasto seleccionado ({concepto}), el centro de costos de mayor importe es {mayor['Centro']}, con {money(mayor['Gasto'])} ({pct(mayor['% del gasto distribuido'])} del total distribuido)." if mayor is not None else f"No hay distribución disponible para {concepto}."),
+      f"Conciliación del concepto seleccionado: consolidado {money(rn)}, suma de centros {money(dist)} y diferencia {money(dist-rn)}."
+    ]
+    return lineas
+
+def crear_pdf(resumen, top, det, conc, titulo_periodo, concepto, ventas_total, gastos_total):
+    buffer=io.BytesIO()
+    doc=SimpleDocTemplate(buffer,pagesize=(29.7*cm,21*cm),rightMargin=1.45*cm,leftMargin=1.45*cm,topMargin=1.3*cm,bottomMargin=1.3*cm)
+    styles=getSampleStyleSheet()
+    styles.add(ParagraphStyle(name='YTitle',parent=styles['Title'],fontName='Helvetica-Bold',fontSize=17,textColor=colors.HexColor('#022f40'),spaceAfter=8))
+    styles.add(ParagraphStyle(name='YHead',parent=styles['Heading2'],fontName='Helvetica-Bold',fontSize=11,textColor=colors.HexColor('#022f40'),spaceBefore=11,spaceAfter=6))
+    styles.add(ParagraphStyle(name='YBody',parent=styles['BodyText'],fontName='Helvetica',fontSize=9,leading=13,spaceAfter=6))
+    styles.add(ParagraphStyle(name='YCell',parent=styles['BodyText'],fontName='Helvetica',fontSize=7.5,leading=9))
+    story=[Paragraph('YUHMAK HOGAR | ADMINISTRACIÓN',styles['YTitle']),Paragraph(f'Informe ejecutivo de gastos EERR | {escape(titulo_periodo)}',styles['YBody'])]
+    for x in resumen:story.append(Paragraph(escape(x),styles['YBody']))
+    story.append(Paragraph('Top 10 | Participación de gastos sobre ventas',styles['YHead']))
+    rows=[['#','Concepto','Importe ($)','% sobre ventas','% de gastos']]
+    for i,(_,r) in enumerate(top.iterrows(),1):rows.append([str(i),Paragraph(escape(str(r['Categoría'])),styles['YCell']),money(r['Gasto']),pct(r['% sobre ventas']),pct(r['% del gasto'])])
+    def tabla(rows,widths):
+      t=Table(rows,colWidths=widths,repeatRows=1,hAlign='LEFT')
+      t.setStyle(TableStyle([('BACKGROUND',(0,0),(-1,0),colors.HexColor('#022f40')),('TEXTCOLOR',(0,0),(-1,0),colors.white),('FONTNAME',(0,0),(-1,0),'Helvetica-Bold'),('FONTSIZE',(0,0),(-1,-1),8),('VALIGN',(0,0),(-1,-1),'TOP'),('ROWBACKGROUNDS',(0,1),(-1,-1),[colors.white,colors.HexColor('#eef3f5')]),('BOTTOMPADDING',(0,0),(-1,-1),6),('TOPPADDING',(0,0),(-1,-1),6),('LINEBELOW',(0,-1),(-1,-1),0.5,colors.HexColor('#b4c1c6'))]))
+      return t
+    story.append(tabla(rows,[1*cm,11*cm,4.2*cm,4*cm,4*cm]))
+    story.append(Paragraph('Distribución por centro de costos',styles['YHead']))
+    story.append(Paragraph('Concepto: '+escape(str(concepto)),styles['YBody']))
+    rows=[['#','Centro de costos','Importe ($)','% del gasto distribuido','% sobre ventas']]
+    for i,(_,r) in enumerate(det.iterrows(),1):rows.append([str(i),Paragraph(escape(str(r['Centro'])),styles['YCell']),money(r['Gasto']),pct(r['% del gasto distribuido']),pct(r['% sobre ventas totales'])])
+    story.append(tabla(rows,[1*cm,10*cm,4.3*cm,4.5*cm,4.4*cm]))
+    story.append(Paragraph('Conciliación por mes',styles['YHead']))
+    rows=[['Mes','Gastos RN','Suma de centros','Diferencia']]
+    for _,r in conc.iterrows():rows.append([r['Mes'],money(r['RN gastos']),money(r['Centros de costos']),money(r['Diferencia'])])
+    story.append(tabla(rows,[5*cm,6*cm,6*cm,6*cm]))
+    story.append(Spacer(1,0.25*cm))
+    story.append(Paragraph('Nota metodológica: gastos de cuentas con saldo negativo, sin costo de mercadería vendida, ingresos ni subtotales. La distribución utiliza el total de los centros de costos como denominador; una diferencia de conciliación distinta de cero requiere revisión. Los importes y porcentajes se calculan a partir del Excel cargado.',styles['YBody']))
+    def pie(canvas,doc):
+      canvas.setFont('Helvetica',8);canvas.setFillColor(colors.grey)
+      canvas.drawString(1.45*cm,0.8*cm,'Reporte generado desde el módulo Administración | Yuhmak Hogar')
+      canvas.drawRightString(28.25*cm,0.8*cm,f'Página {doc.page}')
+    doc.build(story,onFirstPage=pie,onLaterPages=pie)
+    return buffer.getvalue()
+
 def render():
  st.markdown('<div style="background:#022f40;color:white;padding:26px;border-radius:16px"><h1 style="color:white;margin:0">Administración | EERR Hogar</h1><div style="color:#f7d558">Análisis de gastos · Enero a agosto · 15 centros de costos</div></div>',unsafe_allow_html=True)
  st.caption('Módulo independiente de Postventa. Los datos se procesan a partir del Excel que cargás en esta sesión.')
@@ -111,6 +167,12 @@ def render():
  d1.metric('Gasto consolidado RN',money(rn));d2.metric('Distribuido en centros',money(dist));d3.metric('Diferencia de conciliación',money(dist-rn))
  st.dataframe(det.rename(columns={'Centro':'Sucursal / centro de costos','Gasto':'Importe ($)'}).style.format({'Importe ($)':money,'% del gasto distribuido':pct,'% sobre ventas totales':pct}),hide_index=True,use_container_width=True)
  st.bar_chart(det.set_index('Centro')['Gasto'],horizontal=True,x_label='Importe ($)')
+ st.subheader('Resumen ejecutivo')
+ resumen=resumen_ejecutivo(top,det,v,total,opcion,rn,dist,sel)
+ for parrafo in resumen:st.write(parrafo)
+ st.caption('El resumen se actualiza automáticamente con los filtros y el concepto seleccionados.')
+ pdf=crear_pdf(resumen,top,det,conc[conc.Mes.isin(sel)],', '.join(sel),opcion,v,total)
+ st.download_button('Descargar informe ejecutivo completo (PDF)',data=pdf,file_name='Yuhmak_Administracion_EERR_Informe_Ejecutivo.pdf',mime='application/pdf',type='primary')
  st.download_button('Descargar distribución (CSV)',det.to_csv(index=False,sep=';',decimal=',').encode('utf-8-sig'),file_name='Administracion_EERR_distribucion.csv',mime='text/csv')
  with st.expander('Auditoría y advertencias del archivo'):
   for a in sorted(set(avisos)):st.warning(a)

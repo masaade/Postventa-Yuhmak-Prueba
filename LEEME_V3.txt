@@ -1,0 +1,5 @@
+ADMINISTRACION V3 - Resumen ejecutivo y PDF
+
+Reemplazar únicamente administracion.py en GitHub. No modificar app.py.
+El informe se descarga desde la pantalla Administración después de cargar un Excel.
+No subir datos contables reales a la aplicación pública.
