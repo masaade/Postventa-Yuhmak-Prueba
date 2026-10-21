@@ -52,6 +52,10 @@ def leer(datos):
    if key=='ventas':
     val=pd.to_numeric(r[consolidado],errors='coerce')
     if pd.notna(val):ventas.append((m,float(val)))
+    for col,cc in mapa.items():
+     if cc is None:continue
+     vc=pd.to_numeric(r[col],errors='coerce')
+     if pd.notna(vc):ventas_centros.append((m,cc,float(vc)))
     continue
    if key in [norm(x) for x in EXCLUIR]:
     if 'administr' in key:bloque='Administración'
@@ -146,7 +150,7 @@ def render():
  nombres=[MESES[m] for m in meses]
  if 'admin_meses_v4' not in st.session_state:st.session_state['admin_meses_v4']=nombres.copy()
  st.session_state['admin_meses_v4']=[m for m in st.session_state['admin_meses_v4'] if m in nombres]
- st.markdown('**Meses incluidos en el reporte**')
+ st.markdown('**Meses incluidos en el reporte (activar o desactivar)**')
  st.caption('Podés activar o desactivar cada mes individualmente. Los gráficos, indicadores y PDF se recalculan con los meses elegidos.')
  bt1,bt2,_=st.columns([1,1,3])
  if bt1.button('Seleccionar todos',key='admin_todos_v4'):st.session_state['admin_meses_v4']=nombres.copy()

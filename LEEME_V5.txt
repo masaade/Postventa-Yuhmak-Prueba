@@ -1,0 +1,1 @@
+V5: corrige lectura de ventas por centro de costos. Incluye selección de meses, gráficos ordenados por importe y únicamente incidencia de gastos sobre ventas. Reemplazar administracion.py en GitHub.
