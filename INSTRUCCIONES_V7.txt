@@ -1,0 +1,1 @@
+Subir administracion.py descomprimido a la raiz de GitHub, reemplazando el anterior. Seleccion de todos los meses, un mes, trimestre, cuatrimestre o meses personalizados. Si se siguen viendo etiquetas rojas, la app ejecuta un archivo antiguo; revisar el commit y la rama de Streamlit.

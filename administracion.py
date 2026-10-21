@@ -149,16 +149,28 @@ def render():
  meses=list(ventas['Mes'].drop_duplicates())
  nombres=[MESES[m] for m in meses]
  st.markdown('**Períodos a analizar**')
- st.caption('Abrí el desplegable para activar o desactivar meses individualmente.')
- with st.expander('Seleccionar meses', expanded=False):
-  seleccionados=[]
-  cols_mes=st.columns(4)
-  for i, nombre in enumerate(nombres):
-   with cols_mes[i % 4]:
-    if st.checkbox(nombre, value=True, key='admin_mes_v6_'+nombre):
-     seleccionados.append(nombre)
- sel=seleccionados
- st.caption('Meses activos: '+(', '.join(sel) if sel else 'ninguno'))
+ opciones=['Todos los meses','Un mes','Primer trimestre (enero–marzo)','Segundo trimestre (abril–junio)','Primer cuatrimestre (enero–abril)','Segundo cuatrimestre (mayo–agosto)','Personalizado (tildar meses)']
+ modo=st.selectbox('Elegí cómo analizar el período',opciones,key='admin_periodo_v7')
+ if modo=='Todos los meses':
+   sel=nombres
+ elif modo=='Un mes':
+   sel=[st.selectbox('Mes',nombres,key='admin_mes_unico_v7')]
+ elif modo.startswith('Primer trimestre'):
+   sel=[MESES[m] for m in ['Ene','Feb','Mar'] if m in meses]
+ elif modo.startswith('Segundo trimestre'):
+   sel=[MESES[m] for m in ['Abr','May','Jun'] if m in meses]
+ elif modo.startswith('Primer cuatrimestre'):
+   sel=[MESES[m] for m in ['Ene','Feb','Mar','Abr'] if m in meses]
+ elif modo.startswith('Segundo cuatrimestre'):
+   sel=[MESES[m] for m in ['May','Jun','Jul','Ago'] if m in meses]
+ else:
+   with st.expander('Tildar o destildar meses',expanded=True):
+    sel=[]
+    columnas=st.columns(4)
+    for i,nombre in enumerate(nombres):
+     with columnas[i%4]:
+      if st.checkbox(nombre,value=True,key='admin_mes_personal_v7_'+nombre):sel.append(nombre)
+ st.caption('Meses incluidos: '+(', '.join(sel) if sel else 'ninguno'))
  elegidos=[m for m in meses if MESES[m] in sel]
  if not elegidos:st.warning('Seleccioná al menos un mes.');return
  t=tabla[tabla.Mes.isin(elegidos)];v=ventas[ventas.Mes.isin(elegidos)]['Ventas'].sum()
