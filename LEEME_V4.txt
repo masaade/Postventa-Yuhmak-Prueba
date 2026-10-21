@@ -1,0 +1,1 @@
+V4: porcentaje de gasto sobre ventas; gráficos por importe descendente; selección individual de meses; PDF actualizado. Reemplazar solo administracion.py en GitHub. No subir EERR real.
