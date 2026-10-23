@@ -337,10 +337,9 @@ def vista_movimientos():
     i=d[d['TIPO'].eq('ingresos')];e=d[d['TIPO'].eq('egresos')]
     uin=i['_unidades'].sum();uout=e['_unidades'].sum()
     st.markdown('**Resultados del período**')
-    c1,c2,c3=st.columns(3)
+    c1,c2=st.columns(2)
     c1.metric('Ingresos al 055',qty(uin)+' unidades')
     c2.metric('Egresos del 055',qty(uout)+' unidades')
-    c3.metric('Balance de movimientos',f'{uin-uout:+,.0f}'.replace(',','.')+' unidades')
     def value_text(x):return money(x['_valor'].sum()) if len(x) and x['_valor'].notna().all() else 'Sin valorizar'
     c1,c2=st.columns(2)
     c1.metric('Valorización de ingresos',value_text(i))
@@ -384,6 +383,7 @@ def db_conn():
  return c
 email=ADMIN_EMAIL
 role='admin'
+st.error('VERSIÓN DE PRUEBA PÚBLICA · SIN CONTROL DE ACCESO. NO CARGAR EXCEL DE SAP NI INFORMACIÓN CONFIDENCIAL.')
 st.info('Solo para verificar que el tablero puede abrirse online. El almacenamiento de esta prueba es temporal.')
 with st.sidebar:
  st.caption('PRUEBA CLOUD · SIN LOGIN')

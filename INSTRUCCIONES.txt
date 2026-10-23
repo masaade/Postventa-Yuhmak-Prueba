@@ -1,1 +1,1 @@
-Subir solamente app.py a GitHub > Postventa-Yuhmak-Prueba > Agregar archivo > Cargar archivos. Mantener administracion.py V3 sin cambios. La aplicacion sigue siendo publica; no cargar datos confidenciales.
+Reemplazar solo app.py en el repositorio. Se eliminó únicamente la tarjeta Balance de movimientos de la sección Ingresos y egresos · Depósito 055. No se modificó Administración ni la lógica de datos.
