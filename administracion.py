@@ -149,27 +149,17 @@ def render():
  meses=list(ventas['Mes'].drop_duplicates())
  nombres=[MESES[m] for m in meses]
  st.markdown('**Períodos a analizar**')
- opciones=['Todos los meses','Un mes','Primer trimestre (enero–marzo)','Segundo trimestre (abril–junio)','Primer cuatrimestre (enero–abril)','Segundo cuatrimestre (mayo–agosto)','Personalizado (tildar meses)']
- modo=st.selectbox('Elegí cómo analizar el período',opciones,key='admin_periodo_v7')
- if modo=='Todos los meses':
-   sel=nombres
- elif modo=='Un mes':
-   sel=[st.selectbox('Mes',nombres,key='admin_mes_unico_v7')]
- elif modo.startswith('Primer trimestre'):
-   sel=[MESES[m] for m in ['Ene','Feb','Mar'] if m in meses]
- elif modo.startswith('Segundo trimestre'):
-   sel=[MESES[m] for m in ['Abr','May','Jun'] if m in meses]
- elif modo.startswith('Primer cuatrimestre'):
-   sel=[MESES[m] for m in ['Ene','Feb','Mar','Abr'] if m in meses]
- elif modo.startswith('Segundo cuatrimestre'):
-   sel=[MESES[m] for m in ['May','Jun','Jul','Ago'] if m in meses]
+ modo=st.radio('Tipo de período',['Mensual','Cuatrimestral'],horizontal=True,key='admin_tipo_periodo_v8')
+ if modo=='Mensual':
+  mes=st.selectbox('Seleccionar mes',nombres,key='admin_mes_v8')
+  sel=[mes]
  else:
-   with st.expander('Tildar o destildar meses',expanded=True):
-    sel=[]
-    columnas=st.columns(4)
-    for i,nombre in enumerate(nombres):
-     with columnas[i%4]:
-      if st.checkbox(nombre,value=True,key='admin_mes_personal_v7_'+nombre):sel.append(nombre)
+  periodos={
+   'Primer cuatrimestre (enero a abril)':['Ene','Feb','Mar','Abr'],
+   'Segundo cuatrimestre (mayo a agosto)':['May','Jun','Jul','Ago']
+  }
+  periodo=st.selectbox('Seleccionar cuatrimestre',list(periodos),key='admin_cuatrimestre_v8')
+  sel=[MESES[m] for m in periodos[periodo] if m in meses]
  st.caption('Meses incluidos: '+(', '.join(sel) if sel else 'ninguno'))
  elegidos=[m for m in meses if MESES[m] in sel]
  if not elegidos:st.warning('Seleccioná al menos un mes.');return
@@ -177,8 +167,8 @@ def render():
  base=t[t.Centro=='Consolidado']; total=base.Gasto.sum()
  top=base.groupby('Categoría',as_index=False).Gasto.sum().sort_values('Gasto',ascending=False).head(10).copy()
  top['% sobre ventas']=top.Gasto/v*100 if v else 0
- c1,c2,c3=st.columns(3)
- c1.metric('Ventas acumuladas',money(v));c2.metric('Gastos analizados (RN)',money(total));c3.metric('Gastos / ventas',pct(total/v*100) if v else '—')
+ c1,c2=st.columns(2)
+ c1.metric('Ventas acumuladas',money(v));c2.metric('Gastos acumulados',money(total))
  st.caption('Gastos analizados: suma de cuentas de egreso con saldo negativo, sin costo de mercadería vendida, ingresos ni subtotales. No equivale necesariamente al total contable neto de gastos.')
  st.subheader('Top 10 · categorías de gasto')
  st.dataframe(top.rename(columns={'Categoría':'Concepto','Gasto':'Importe ($)'}).style.format({'Importe ($)':money,'% sobre ventas':pct}),hide_index=True,use_container_width=True)
@@ -198,8 +188,8 @@ def render():
  det=det.merge(ventas_cc,on='Centro',how='left')
  det['% sobre ventas sucursal']=det.apply(lambda r:r['Gasto']/r['Ventas centro']*100 if pd.notna(r['Ventas centro']) and r['Ventas centro']>0 else float('nan'),axis=1)
  rn=base[base.Categoría==opcion].Gasto.sum();dist=det.Gasto.sum()
- d1,d2,d3=st.columns(3)
- d1.metric('Gasto consolidado RN',money(rn));d2.metric('Distribuido en centros',money(dist));d3.metric('Diferencia de conciliación',money(dist-rn))
+ d1,d2=st.columns(2)
+ d1.metric('Gasto consolidado RN',money(rn));d2.metric('Distribuido en centros',money(dist))
  mostrar=det[['Centro','Gasto','% sobre ventas sucursal']].rename(columns={'Centro':'Sucursal / centro de costos','Gasto':'Importe ($)','% sobre ventas sucursal':'% sobre ventas del centro'})
  st.dataframe(mostrar.style.format({'Importe ($)':money,'% sobre ventas del centro':lambda x:pct(x) if pd.notna(x) else 'Sin ventas'}),hide_index=True,use_container_width=True)
  st.caption('Incidencia por centro = gasto del concepto / ventas del mismo centro. Sin ventas: N/D.')

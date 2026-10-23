@@ -1,0 +1,1 @@
+Reemplazar solo administracion.py en la rama usada por Streamlit. Selector: mensual o cuatrimestral. Indicadores superiores: ventas y gastos acumulados. Detalle: gasto consolidado RN y distribuido en centros. La auditoria sigue disponible en su desplegable.
