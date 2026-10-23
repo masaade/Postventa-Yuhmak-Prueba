@@ -1,0 +1,1 @@
+V14: Se quitaron los porcentajes de la distribución por centro de costos (tabla, gráfico, CSV y PDF). El Top 10 conserva su porcentaje sobre ingresos. Reemplazar solo administracion.py en GitHub.

@@ -117,11 +117,10 @@ def crear_pdf(resumen,top,detalle,periodo,concepto):
  for i,(_,r) in enumerate(top.iterrows(),1):filas.append([str(i),Paragraph(escape(str(r['Categoría'])),estilos['YBody']),money(r['Gasto']),pct(r['% sobre ingresos'])])
  elementos.append(tabla(filas,[1*cm,13*cm,6*cm,4*cm]))
  elementos.append(Paragraph('Distribución por centro de costos: '+escape(concepto),estilos['Heading2']))
- filas=[['#','Centro','Gasto ($)','% ingresos del centro']]
+ filas=[['#','Centro','Gasto ($)']]
  for i,(_,r) in enumerate(detalle.iterrows(),1):
-  valor=r['% sobre ingresos del centro']
-  filas.append([str(i),str(r['Centro']),money(r['Gasto']),pct(valor) if pd.notna(valor) else 'Sin ingresos'])
- elementos.append(tabla(filas,[1*cm,12*cm,6*cm,5*cm]))
+  filas.append([str(i),str(r['Centro']),money(r['Gasto'])])
+ elementos.append(tabla(filas,[1*cm,16*cm,7*cm]))
  elementos.append(Spacer(1,0.3*cm))
  elementos.append(Paragraph('Metodología: ingresos = ventas + otros ingresos. Gastos netos = suma de importes negativos y positivos de los centros de costos, con signo invertido para presentar el gasto neto positivo, excluyendo ingresos, costo de ventas y subtotales. No se utiliza RN ni conciliación. RRHH y RRHH - Expensas Hogar se agrupan en RRHH, manteniendo el detalle por centro de costos.',estilos['YBody']))
  doc.build(elementos)
@@ -171,19 +170,10 @@ def render():
  detalle=t[t.Categoría==concepto].groupby('Centro',as_index=False).Gasto.sum()
  detalle=pd.DataFrame({'Centro':CENTROS}).merge(detalle,on='Centro',how='left').fillna({'Gasto':0})
  detalle=detalle.sort_values('Gasto',ascending=False).reset_index(drop=True)
- ingresos_cc=ingresos_centros[ingresos_centros.Mes.isin(elegidos)].groupby('Centro',as_index=False)['Ingreso centro'].sum()
- detalle=detalle.merge(ingresos_cc,on='Centro',how='left')
- # Excepción: CD y Áreas Centrales se miden sobre ventas de TODAS las unidades,
-  # no sobre ingresos propios. Las demás sucursales conservan la lógica original.
- def incidencia_centro(r):
-   denominador=venta_total if r['Centro'] in ('CD','Areas Centrales Hogar') else r['Ingreso centro']
-   return r['Gasto']/denominador*100 if pd.notna(denominador) and denominador>0 else float('nan')
- detalle['% sobre ingresos del centro']=detalle.apply(incidencia_centro,axis=1)
  st.metric('Gasto distribuido en centros',money(detalle.Gasto.sum()))
- st.caption('CD y Áreas Centrales Hogar: incidencia sobre ventas de las 13 sucursales comerciales (sin CD ni Áreas Centrales). Resto de centros: incidencia sobre ingresos propios.')
- st.dataframe(detalle[['Centro','Gasto','% sobre ingresos del centro']].rename(columns={'Centro':'Sucursal / centro de costos','Gasto':'Importe ($)'}).style.format({'Importe ($)':money,'% sobre ingresos del centro':lambda x:pct(x) if pd.notna(x) else 'Sin ingresos'}),hide_index=True,use_container_width=True)
+ st.dataframe(detalle[['Centro','Gasto']].rename(columns={'Centro':'Sucursal / centro de costos','Gasto':'Importe ($)'}).style.format({'Importe ($)':money}),hide_index=True,use_container_width=True)
  orden=detalle.Centro.tolist()
- graf=alt.Chart(detalle).mark_bar().encode(y=alt.Y('Centro:N',sort=orden,title=None),x=alt.X('Gasto:Q',title='Gasto ($)'),tooltip=['Centro:N',alt.Tooltip('Gasto:Q',format=',.0f'),alt.Tooltip('% sobre ingresos del centro:Q',format='.2f')]).properties(height=480)
+ graf=alt.Chart(detalle).mark_bar().encode(y=alt.Y('Centro:N',sort=orden,title=None),x=alt.X('Gasto:Q',title='Gasto ($)'),tooltip=['Centro:N',alt.Tooltip('Gasto:Q',format=',.0f')]).properties(height=480)
  st.altair_chart(graf,use_container_width=True)
  st.subheader('Resumen ejecutivo')
  resumen=resumen_ejecutivo(top,detalle,ingreso_total,gasto_total,concepto,seleccion)
