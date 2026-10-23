@@ -1,0 +1,2 @@
+Reemplazar únicamente app.py en GitHub.
+Cambios: valorización visible dentro de las seis tarjetas de rotación; eliminación de la sección Situación y movimientos complementarios. No se modificaron cálculos ni Administración.

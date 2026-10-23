@@ -1,3 +1,4 @@
+import html
 import io, json, hashlib, re, os, sqlite3, secrets
 from pathlib import Path
 from datetime import datetime
@@ -63,6 +64,19 @@ h2{font-size:1.43rem!important}h3{font-size:1.13rem!important}
 [data-testid="stVerticalBlock"]>div:has(> [data-testid="stMetric"]){min-width:0}
 [data-testid="stCaptionContainer"]{color:#6a8190}
 @media(max-width:800px){.block-container{padding:1rem .85rem 3rem!important}.hero{padding:26px 23px;border-radius:16px}.hero:after{opacity:.35}.hero h1{font-size:1.75rem!important}[data-testid="stMetric"]{min-height:116px;padding:16px}}
+
+/* V18: cantidades y valorizaciones integradas en una misma tarjeta. */
+.tarjeta-rotacion{background:#fff;border:1px solid #e0e9ee;border-radius:19px;
+ padding:23px 25px 21px 29px;min-height:190px;box-shadow:0 6px 19px rgba(7,48,69,.045);
+ position:relative;overflow:hidden;margin-bottom:8px}
+.tarjeta-rotacion:before{content:'';position:absolute;top:0;left:0;bottom:0;
+ width:5px;background:#ffc107}
+.tarjeta-rotacion-titulo{font-size:15px;color:#597b8c;margin-bottom:8px}
+.tarjeta-rotacion-cantidad{font-size:33px;font-weight:750;line-height:1.15;color:#022f40}
+.tarjeta-rotacion-separador{height:1px;background:#e8eef2;margin:15px 0 10px}
+.tarjeta-rotacion-leyenda{font-size:11px;font-weight:700;letter-spacing:.09em;color:#668394}
+.tarjeta-rotacion-valor{font-size:21px;font-weight:750;line-height:1.4;color:#12485f}
+
 </style>""",unsafe_allow_html=True)
 st.markdown('<div class="hero"><div class="eyebrow">YUHMAK HOGAR / INTELIGENCIA DE GESTIÓN</div><h1>Postventa · Depósito 055</h1><p>Resultados de recuperación, stock, Service y movimientos entre sucursales. Una lectura clara de la gestión para tomar decisiones.</p><span class="hero-tag">● TABLERO EJECUTIVO &nbsp;·&nbsp; SAP</span></div>',unsafe_allow_html=True)
 
@@ -504,8 +518,16 @@ if all((DATA/(k+'.xlsx')).exists() for k in SOURCES) and (DATA/'movimientos_055.
    else:st.caption('La carga de costos está habilitada para Administración.')
   def leyenda_valor(importe):return 'Valorización: '+money(importe) if importe is not None else 'Valorización: Sin valorizar'
   def tarjeta(col,nombre,cantidad,importe):
-   col.metric(nombre,qty(cantidad)+' unidades')
-   col.caption(leyenda_valor(importe))
+   # Cantidad y valorización dentro de la misma tarjeta, con jerarquía visual.
+   texto_valor=money(importe) if importe is not None else 'Sin valorizar'
+   col.markdown(
+    '<div class="tarjeta-rotacion">'
+    f'<div class="tarjeta-rotacion-titulo">{html.escape(str(nombre))}</div>'
+    f'<div class="tarjeta-rotacion-cantidad">{html.escape(qty(cantidad))} unidades</div>'
+    '<div class="tarjeta-rotacion-separador"></div>'
+    '<div class="tarjeta-rotacion-leyenda">VALORIZACIÓN</div>'
+    f'<div class="tarjeta-rotacion-valor">{html.escape(texto_valor)}</div>'
+    '</div>',unsafe_allow_html=True)
   val_total=val_inicial+val_ingresos if val_inicial is not None and val_ingresos is not None else None
   # Service y proveedores son circuitos distintos: sus retornos se muestran por separado.
   x,y,z=st.columns(3)
@@ -517,12 +539,6 @@ if all((DATA/(k+'.xlsx')).exists() for k in SOURCES) and (DATA/'movimientos_055.
   tarjeta(y,'Reparadas · retorno de Service 109',m['returned_units'],m['returned_value'])
   tarjeta(z,'Regresadas a sucursales',salidas_sucursales,val_egresos)
   st.caption('Las valorizaciones de proveedores y Service son importes registrados en sus respectivos archivos SAP; no deben sumarse entre sí como si fueran recuperaciones únicas. Los ingresos al 055 excluyen los retornos del 109. Las unidades reparadas se cuentan al regresar del Service; los movimientos de salida y retorno no se suman entre sí como recuperaciones independientes.')
-  section('Situación y movimientos complementarios')
-  x,y,z=st.columns(3)
-  x.metric('Stock actual · 055',qty(m['stock_units'])+' unidades')
-  y.metric('Enviadas a Service · 109',qty(m['sent_units'])+' unidades')
-  z.metric('Recuperación económica · proveedores',money(m['recovered_provider']))
-  st.caption('Las unidades enviadas a proveedor se dan de baja del 055 al salir. El reporte de notas de crédito permite identificar resoluciones, pero no sustituye un registro de todos los envíos físicos a proveedor. Por eso no se presenta una cifra de envíos sin una fuente verificable.')
   section('Lectura ejecutiva de la gestión')
   note(f"""<strong>Recuperación:</strong> se registraron <strong>{qty(m['nc_units']+m['physical_units'])} unidades</strong> recuperadas de proveedores, por <strong>{money(m['recovered_provider'])}</strong>. De ese total, {qty(m['nc_units'])} unidades corresponden a notas de crédito ({money(m['nc_value'])}) y {qty(m['physical_units'])} a productos nuevos o reparados ({money(m['physical_value'])}).<br><strong>Gestiones pendientes:</strong> permanecen {qty(m['pending_nc_units'])} unidades con remito abierto y sin NC, por {money(m['pending_nc_value'])}. Otras {qty(m['pending_send_units'])} unidades tienen solicitud abierta y todavía no salieron.<br><strong>Rotación:</strong> se gestionaron {qty(total_gestionado)} unidades (900 iniciales más {qty(entradas)} recibidas desde sucursales); {qty(salidas_sucursales)} unidades regresaron a sucursales. El stock actual del 055 es de {qty(m['stock_units'])} unidades.""")
   section('Composición económica de la recuperación')
