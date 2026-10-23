@@ -40,7 +40,7 @@ def leer(datos):
  libro=pd.ExcelFile(io.BytesIO(datos))
  meses=[m for m in MESES if m in libro.sheet_names]
  if not meses:raise ValueError('No se encontraron hojas mensuales Ene a Ago.')
- gastos=[];ingresos=[];ingresos_cc=[];avisos=[]
+ gastos=[];ingresos=[];ingresos_cc=[];ventas=[];avisos=[]
  excluidos={norm(x) for x in EXCLUIR}
  for m in meses:
   df=pd.read_excel(libro,sheet_name=m)
@@ -83,7 +83,7 @@ def leer(datos):
     val=pd.to_numeric(r[col],errors='coerce')
     if pd.notna(val) and val!=0:gastos.append((m,bloque,nombre,categoria,cc,-float(val)))
  tabla=pd.DataFrame(gastos,columns=['Mes','Bloque','Cuenta','Categoría','Centro','Gasto'])
- return tabla,pd.DataFrame(ingresos,columns=['Mes','Ingreso']),pd.DataFrame(ingresos_cc,columns=['Mes','Centro','Ingreso centro']),avisos
+ return tabla,pd.DataFrame(ingresos,columns=['Mes','Ingreso']),pd.DataFrame(ingresos_cc,columns=['Mes','Centro','Ingreso centro']),pd.DataFrame(ventas,columns=['Mes','Venta']),avisos
 
 def resumen_ejecutivo(top,detalle,ingresos,gastos,concepto,meses):
  incidencia=gastos/ingresos*100 if ingresos else 0
@@ -131,7 +131,7 @@ def render():
  archivo=st.file_uploader('Cargar EERR por Sucursal (.xlsx)',type=['xlsx'],key='admin_eerr')
  if archivo is None:
   st.info('Cargá el Excel para visualizar el análisis.');return
- try:tabla,ingresos,ingresos_centros,avisos=leer(archivo.getvalue())
+ try:tabla,ingresos,ingresos_centros,ventas,avisos=leer(archivo.getvalue())
  except Exception as e:st.error('No se pudo interpretar el archivo: '+str(e));return
  if tabla.empty or ingresos.empty:st.warning('No se encontraron gastos o ingresos válidos.');return
  meses=list(ingresos.Mes.drop_duplicates())
@@ -151,6 +151,7 @@ def render():
  if not elegidos:st.warning('Seleccioná al menos un mes.');return
  t=tabla[tabla.Mes.isin(elegidos)]
  ingreso_total=ingresos[ingresos.Mes.isin(elegidos)].Ingreso.sum()
+ venta_total=ventas[ventas.Mes.isin(elegidos)].Venta.sum()
  gasto_total=t.Gasto.sum()
  c1,c2=st.columns(2)
  c1.metric('Ingresos acumulados',money(ingreso_total))
@@ -170,8 +171,14 @@ def render():
  detalle=detalle.sort_values('Gasto',ascending=False).reset_index(drop=True)
  ingresos_cc=ingresos_centros[ingresos_centros.Mes.isin(elegidos)].groupby('Centro',as_index=False)['Ingreso centro'].sum()
  detalle=detalle.merge(ingresos_cc,on='Centro',how='left')
- detalle['% sobre ingresos del centro']=detalle.apply(lambda r:r['Gasto']/r['Ingreso centro']*100 if pd.notna(r['Ingreso centro']) and r['Ingreso centro']>0 else float('nan'),axis=1)
+ # Excepción: CD y Áreas Centrales se miden sobre ventas de TODAS las unidades,
+  # no sobre ingresos propios. Las demás sucursales conservan la lógica original.
+ def incidencia_centro(r):
+   denominador=venta_total if r['Centro'] in ('CD','Areas Centrales Hogar') else r['Ingreso centro']
+   return r['Gasto']/denominador*100 if pd.notna(denominador) and denominador>0 else float('nan')
+ detalle['% sobre ingresos del centro']=detalle.apply(incidencia_centro,axis=1)
  st.metric('Gasto distribuido en centros',money(detalle.Gasto.sum()))
+ st.caption('CD y Áreas Centrales Hogar: incidencia sobre ventas totales de todas las unidades. Resto de centros: incidencia sobre ingresos propios.')
  st.dataframe(detalle[['Centro','Gasto','% sobre ingresos del centro']].rename(columns={'Centro':'Sucursal / centro de costos','Gasto':'Importe ($)'}).style.format({'Importe ($)':money,'% sobre ingresos del centro':lambda x:pct(x) if pd.notna(x) else 'Sin ingresos'}),hide_index=True,use_container_width=True)
  orden=detalle.Centro.tolist()
  graf=alt.Chart(detalle).mark_bar().encode(y=alt.Y('Centro:N',sort=orden,title=None),x=alt.X('Gasto:Q',title='Gasto ($)'),tooltip=['Centro:N',alt.Tooltip('Gasto:Q',format=',.0f'),alt.Tooltip('% sobre ingresos del centro:Q',format='.2f')]).properties(height=480)
