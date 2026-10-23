@@ -1,0 +1,1 @@
+V9: Ingresos = ventas + otros ingresos; gastos sumados desde 15 centros de costos sin RN; selector todos/primer cuatrimestre/segundo cuatrimestre/personalizado; Top 10 y detalle ordenados; PDF actualizado. Subir administracion.py a GitHub. Postventa no cambia.
