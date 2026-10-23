@@ -1,0 +1,1 @@
+Reemplazar solo administracion.py. Cambio: excluir la fila de cuenta Expensas Hogar por duplicacion; conservar centro Areas Centrales Hogar y agrupacion RRHH.

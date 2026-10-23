@@ -56,6 +56,9 @@ def leer(datos):
    nombre=str(r[cuenta]).strip()
    if nombre in ('nan','None',''):continue
    key=norm(nombre)
+   # Excluir fila duplicada; conservar el centro de costos Areas Centrales Hogar.
+   if key=='expensas hogar':
+    continue
    if key=='ventas' or key in ('otros ingresos','total otros ingresos'):
     # Cada fila de ingreso agregada se contabiliza una vez, sin sumar subcuentas.
     for col,cc in mapa.items():
