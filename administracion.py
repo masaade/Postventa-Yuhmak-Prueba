@@ -73,13 +73,13 @@ def leer(datos):
    for col,cc in mapa.items():
     if cc is None:continue
     val=pd.to_numeric(r[col],errors='coerce')
-    if pd.notna(val) and val<0:gastos.append((m,bloque,nombre,categoria,cc,-float(val)))
+    if pd.notna(val) and val!=0:gastos.append((m,bloque,nombre,categoria,cc,-float(val)))
  tabla=pd.DataFrame(gastos,columns=['Mes','Bloque','Cuenta','Categoría','Centro','Gasto'])
  return tabla,pd.DataFrame(ingresos,columns=['Mes','Ingreso']),pd.DataFrame(ingresos_cc,columns=['Mes','Centro','Ingreso centro']),avisos
 
 def resumen_ejecutivo(top,detalle,ingresos,gastos,concepto,meses):
  incidencia=gastos/ingresos*100 if ingresos else 0
- lineas=[f"Período: {', '.join(meses)}. Ingresos acumulados (ventas + otros ingresos): {money(ingresos)}. Gastos acumulados: {money(gastos)}. Incidencia: {pct(incidencia)}."]
+ lineas=[f"Período: {', '.join(meses)}. Ingresos acumulados (ventas + otros ingresos): {money(ingresos)}. Gastos acumulados netos: {money(gastos)}. Incidencia: {pct(incidencia)}."]
  if not top.empty:
   lider=top.iloc[0]
   lineas.append(f"Principal categoría: {lider['Categoría']}, {money(lider['Gasto'])}, incidencia sobre ingresos: {pct(lider['% sobre ingresos'])}.")
@@ -147,7 +147,7 @@ def render():
  c1,c2=st.columns(2)
  c1.metric('Ingresos acumulados',money(ingreso_total))
  c2.metric('Gastos acumulados',money(gasto_total))
- st.caption('Ingresos = ventas + otros ingresos. Gastos = suma de los centros de costos, sin RN.')
+ st.caption('Ingresos = ventas + otros ingresos. Gastos netos = egresos negativos menos ajustes positivos de los centros de costos, sin RN.')
  top=t.groupby('Categoría',as_index=False).Gasto.sum().sort_values('Gasto',ascending=False).head(10).copy()
  top['% sobre ingresos']=top.Gasto/ingreso_total*100 if ingreso_total else float('nan')
  st.subheader('Top 10 · categorías de gasto')

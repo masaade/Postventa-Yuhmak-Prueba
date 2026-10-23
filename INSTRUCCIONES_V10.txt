@@ -1,0 +1,1 @@
+Corregido: en cuentas de gasto se suman importes positivos y negativos, conservando su efecto neto. Positivos reducen gastos. Reemplazar solo administracion.py. Validar conciliación agosto contra EERR antes de aprobar.
