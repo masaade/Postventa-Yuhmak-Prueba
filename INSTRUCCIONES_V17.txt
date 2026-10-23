@@ -1,0 +1,1 @@
+Reemplazar únicamente app.py en GitHub. La valorización de las 900 unidades iniciales requiere ingresar su valor histórico de enero. Los movimientos requieren costos en SAP o lista de costos por artículo. Los totales incompletos se muestran como Sin valorizar. Administración permanece sin cambios.

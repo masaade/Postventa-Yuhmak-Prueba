@@ -468,21 +468,55 @@ if all((DATA/(k+'.xlsx')).exists() for k in SOURCES) and (DATA/'movimientos_055.
   section('Indicadores principales · Rotación de mercadería')
   # Base de gestión: 900 unidades históricas + ingresos de sucursales al 055.
   # No se incluyen transferencias 055 <-> 109 ni retornos de Service como ingresos nuevos.
-  movimientos=movimientos_055((DATA/'movimientos_055.xlsx').read_bytes())
-  entradas=movimientos.loc[movimientos['TIPO'].eq('ingresos'),'_unidades'].sum()
-  salidas_sucursales=movimientos.loc[movimientos['TIPO'].eq('egresos'),'_unidades'].sum()
+  costos=(DATA/'precios_055.xlsx').read_bytes() if (DATA/'precios_055.xlsx').exists() else None
+  try:
+   movimientos=movimientos_055((DATA/'movimientos_055.xlsx').read_bytes(),costos)
+  except Exception as exc:
+   st.error('No se pudo valorizar los movimientos: '+str(exc));st.stop()
+  ingresos=movimientos.loc[movimientos['TIPO'].eq('ingresos')]
+  egresos=movimientos.loc[movimientos['TIPO'].eq('egresos')]
+  entradas=ingresos['_unidades'].sum()
+  salidas_sucursales=egresos['_unidades'].sum()
   total_gestionado=900+entradas
   resueltas_proveedor=m['nc_units']+m['physical_units']
+  # Un total se informa solo si todos los movimientos tienen costo disponible.
+  def valor_completo(filas):
+   return float(filas['_valor'].sum()) if len(filas) and filas['_valor'].notna().all() else None
+  val_ingresos=valor_completo(ingresos)
+  val_egresos=valor_completo(egresos)
+  archivo_inicial=DATA/'valorizacion_inicial_055.json'
+  val_inicial=None
+  if archivo_inicial.exists():
+   try:val_inicial=float(json.loads(archivo_inicial.read_text(encoding='utf-8'))['valor'])
+   except (ValueError,KeyError,TypeError):pass
+  with st.expander('Valorización de la rotación · datos de costos',expanded=False):
+   st.caption('Para valorizar el stock inicial se requiere el importe histórico de las 900 unidades en enero. No se utiliza el stock actual como sustituto. Los movimientos se valorizan desde el Excel SAP o la lista de costos por artículo.')
+   if role=='admin':
+    dato_inicial=st.number_input('Valor histórico de las 900 unidades iniciales ($)',min_value=0.0,value=val_inicial or 0.0,step=1000.0,format='%.2f')
+    if st.button('Guardar valorización inicial',key='guardar_val_inicial'):
+     if dato_inicial>0:
+      archivo_inicial.write_text(json.dumps({'valor':dato_inicial}),encoding='utf-8')
+      st.rerun()
+     else:st.warning('Ingresá un valor positivo obtenido del stock histórico de enero.')
+    lista=st.file_uploader('Lista de costos por artículo para movimientos (opcional)',type=['xlsx'],key='lista_costos_resumen')
+    if lista is not None and st.button('Guardar lista de costos',key='guardar_costos_resumen'):
+     (DATA/'precios_055.xlsx').write_bytes(lista.getvalue());st.rerun()
+   else:st.caption('La carga de costos está habilitada para Administración.')
+  def leyenda_valor(importe):return 'Valorización: '+money(importe) if importe is not None else 'Valorización: Sin valorizar'
+  def tarjeta(col,nombre,cantidad,importe):
+   col.metric(nombre,qty(cantidad)+' unidades')
+   col.caption(leyenda_valor(importe))
+  val_total=val_inicial+val_ingresos if val_inicial is not None and val_ingresos is not None else None
   # Service y proveedores son circuitos distintos: sus retornos se muestran por separado.
   x,y,z=st.columns(3)
-  x.metric('Stock inicial · enero', '900 unidades')
-  y.metric('Ingresos desde sucursales al 055',qty(entradas)+' unidades')
-  z.metric('Total de mercadería gestionada',qty(total_gestionado)+' unidades')
+  tarjeta(x,'Stock inicial · enero',900,val_inicial)
+  tarjeta(y,'Ingresos desde sucursales al 055',entradas,val_ingresos)
+  tarjeta(z,'Total de mercadería gestionada',total_gestionado,val_total)
   x,y,z=st.columns(3)
-  x.metric('Resueltas con proveedores',qty(resueltas_proveedor)+' unidades')
-  y.metric('Reparadas · retorno de Service 109',qty(m['returned_units'])+' unidades')
-  z.metric('Regresadas a sucursales',qty(salidas_sucursales)+' unidades')
-  st.caption('Los ingresos al 055 excluyen los retornos del 109. Las unidades reparadas se cuentan al regresar del Service; los movimientos de salida y retorno no se suman entre sí como recuperaciones independientes.')
+  tarjeta(x,'Resueltas con proveedores',resueltas_proveedor,m['recovered_provider'])
+  tarjeta(y,'Reparadas · retorno de Service 109',m['returned_units'],m['returned_value'])
+  tarjeta(z,'Regresadas a sucursales',salidas_sucursales,val_egresos)
+  st.caption('Las valorizaciones de proveedores y Service son importes registrados en sus respectivos archivos SAP; no deben sumarse entre sí como si fueran recuperaciones únicas. Los ingresos al 055 excluyen los retornos del 109. Las unidades reparadas se cuentan al regresar del Service; los movimientos de salida y retorno no se suman entre sí como recuperaciones independientes.')
   section('Situación y movimientos complementarios')
   x,y,z=st.columns(3)
   x.metric('Stock actual · 055',qty(m['stock_units'])+' unidades')
