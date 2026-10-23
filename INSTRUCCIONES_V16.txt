@@ -1,0 +1,4 @@
+Reemplazar únicamente app.py en GitHub. Mantener administracion.py sin cambios.
+La sección Indicadores principales presenta stock inicial (900), ingresos sucursales 055, total gestionado, recuperaciones proveedor, retornos reparados 109 y salidas a sucursales.
+No sumar retornos de Service a ingresos nuevos ni interpretar suma de movimientos como unidades únicas recuperadas.
+Revisar los datos reales y conciliar transferencias y resoluciones antes de publicar indicadores de recuperación total única.
