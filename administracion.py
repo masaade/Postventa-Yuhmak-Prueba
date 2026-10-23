@@ -64,6 +64,8 @@ def leer(datos):
      if pd.notna(val):
       ingresos.append((m,float(val)))
       ingresos_cc.append((m,cc,float(val)))
+      if key=='ventas' and cc in CENTROS[:13]:
+       ventas.append((m,float(val)))
     if key!='ventas':bloque='Otros ingresos'
     continue
    if key in excluidos:
@@ -178,7 +180,7 @@ def render():
    return r['Gasto']/denominador*100 if pd.notna(denominador) and denominador>0 else float('nan')
  detalle['% sobre ingresos del centro']=detalle.apply(incidencia_centro,axis=1)
  st.metric('Gasto distribuido en centros',money(detalle.Gasto.sum()))
- st.caption('CD y Áreas Centrales Hogar: incidencia sobre ventas totales de todas las unidades. Resto de centros: incidencia sobre ingresos propios.')
+ st.caption('CD y Áreas Centrales Hogar: incidencia sobre ventas de las 13 sucursales comerciales (sin CD ni Áreas Centrales). Resto de centros: incidencia sobre ingresos propios.')
  st.dataframe(detalle[['Centro','Gasto','% sobre ingresos del centro']].rename(columns={'Centro':'Sucursal / centro de costos','Gasto':'Importe ($)'}).style.format({'Importe ($)':money,'% sobre ingresos del centro':lambda x:pct(x) if pd.notna(x) else 'Sin ingresos'}),hide_index=True,use_container_width=True)
  orden=detalle.Centro.tolist()
  graf=alt.Chart(detalle).mark_bar().encode(y=alt.Y('Centro:N',sort=orden,title=None),x=alt.X('Gasto:Q',title='Gasto ($)'),tooltip=['Centro:N',alt.Tooltip('Gasto:Q',format=',.0f'),alt.Tooltip('% sobre ingresos del centro:Q',format='.2f')]).properties(height=480)

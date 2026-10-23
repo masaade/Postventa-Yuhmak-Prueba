@@ -1,0 +1,1 @@
+Reemplazar solo administracion.py. V13 corrige la base de ventas de CD y Áreas Centrales: suma de Ventas de los 13 centros comerciales en el período seleccionado. Otros centros mantienen incidencia sobre ingresos propios. No se alteran importes de gasto ni Postventa.
