@@ -1,0 +1,1 @@
+V11: RRHH y RRHH - Expensas Hogar se agrupan en una sola categoría RRHH en Top 10, gráficos, desglose por centros, resumen ejecutivo y PDF. Se mantiene el cálculo neto de gastos de V10, incluidos ajustes positivos. Reemplazar únicamente administracion.py en GitHub.

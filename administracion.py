@@ -19,6 +19,13 @@ def norm(s):
  import unicodedata
  return ''.join(c for c in unicodedata.normalize('NFKD',str(s)) if not unicodedata.combining(c)).lower().replace('á','a').strip()
 
+def categoria_agrupada(categoria):
+ """Agrupa RRHH y RRHH - Expensas Hogar sin alterar el centro de costos."""
+ n=' '.join(norm(categoria).replace('-', ' ').replace('–', ' ').replace('—', ' ').split())
+ if n in ('rrhh', 'rrhh expensas hogar'):
+  return 'RRHH'
+ return categoria
+
 def centro(s):
  n=norm(s)
  if ('central' in n and 'hogar' in n) or n=='expensas hogar':return 'Areas Centrales Hogar'
@@ -70,6 +77,7 @@ def leer(datos):
    categoria=str(r[area]).strip()
    if categoria in ('nan','None',''):continue
    if norm(categoria) in ('venta','costo de mercaderia vendida'):continue
+   categoria=categoria_agrupada(categoria)
    for col,cc in mapa.items():
     if cc is None:continue
     val=pd.to_numeric(r[col],errors='coerce')
@@ -113,7 +121,7 @@ def crear_pdf(resumen,top,detalle,periodo,concepto):
   filas.append([str(i),str(r['Centro']),money(r['Gasto']),pct(valor) if pd.notna(valor) else 'Sin ingresos'])
  elementos.append(tabla(filas,[1*cm,12*cm,6*cm,5*cm]))
  elementos.append(Spacer(1,0.3*cm))
- elementos.append(Paragraph('Metodología: ingresos = ventas + otros ingresos. Gastos = suma de importes negativos de centros de costos convertidos a positivos, excluyendo ingresos, costo de ventas y subtotales. No se utiliza RN ni conciliación.',estilos['YBody']))
+ elementos.append(Paragraph('Metodología: ingresos = ventas + otros ingresos. Gastos netos = suma de importes negativos y positivos de los centros de costos, con signo invertido para presentar el gasto neto positivo, excluyendo ingresos, costo de ventas y subtotales. No se utiliza RN ni conciliación. RRHH y RRHH - Expensas Hogar se agrupan en RRHH, manteniendo el detalle por centro de costos.',estilos['YBody']))
  doc.build(elementos)
  return buffer.getvalue()
 
