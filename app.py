@@ -119,6 +119,10 @@ def compute(d):
  unmatched_return=(r-s.reindex(r.index,fill_value=0)).clip(lower=0)
  # Clasificación exclusiva por línea de solicitud y producto: NC > retorno físico > pendiente.
  n=nc.copy()
+ # Corte de solicitudes de proveedores: desde el 07/01/2026 inclusive.
+ if 'Fecha Solicitud' in n.columns:
+  _fechas=date_col(n['Fecha Solicitud'])
+  n=n.loc[_fechas.ge(pd.Timestamp('2026-01-07'))].copy()
  for c in ['Nro Solicitud','Nro Devolución','Nro Nota Crédito','Estado Solicitud','Estado Devolución']:
   if c not in n.columns:raise ValueError(f'Notas de crédito: falta columna {c}')
  n['_sol']=ids(n['Nro Solicitud']);n['_dev']=ids(n['Nro Devolución']);n['_nc']=ids(n['Nro Nota Crédito'])
@@ -480,14 +484,14 @@ if all((DATA/(k+'.xlsx')).exists() for k in SOURCES) and (DATA/'movimientos_055.
  tabs=st.tabs(['Resumen ejecutivo','Recuperación y pendientes','Stock y Service','Evolución temporal','Ingresos y egresos','Detalle y PDF'])
  with tabs[0]:
   section('Indicadores principales · Rotación de mercadería')
-  # Base de gestión: 900 unidades históricas + ingresos de sucursales al 055.
+  # Base estimada: ≈900 iniciales + ingresos desde el 01/04/2026.
   # No se incluyen transferencias 055 <-> 109 ni retornos de Service como ingresos nuevos.
   costos=(DATA/'precios_055.xlsx').read_bytes() if (DATA/'precios_055.xlsx').exists() else None
   try:
    movimientos=movimientos_055((DATA/'movimientos_055.xlsx').read_bytes(),costos)
   except Exception as exc:
    st.error('No se pudo valorizar los movimientos: '+str(exc));st.stop()
-  ingresos=movimientos.loc[movimientos['TIPO'].eq('ingresos')]
+  ingresos=movimientos.loc[movimientos['TIPO'].eq('ingresos') & movimientos['_fecha'].ge(pd.Timestamp('2026-04-01'))]
   egresos=movimientos.loc[movimientos['TIPO'].eq('egresos')]
   entradas=ingresos['_unidades'].sum()
   salidas_sucursales=egresos['_unidades'].sum()
@@ -531,23 +535,24 @@ if all((DATA/(k+'.xlsx')).exists() for k in SOURCES) and (DATA/'movimientos_055.
   val_total=val_inicial+val_ingresos if val_inicial is not None and val_ingresos is not None else None
   # Service y proveedores son circuitos distintos: sus retornos se muestran por separado.
   x,y,z=st.columns(3)
-  tarjeta(x,'Stock inicial · enero',900,val_inicial)
-  tarjeta(y,'Ingresos desde sucursales al 055',entradas,val_ingresos)
+  tarjeta(x,'Stock inicial estimado · enero',900,val_inicial)
+  tarjeta(y,'Ingresos nuevos desde abril',entradas,val_ingresos)
   tarjeta(z,'Total de mercadería gestionada',total_gestionado,val_total)
   x,y,z=st.columns(3)
   tarjeta(x,'Resueltas con proveedores',resueltas_proveedor,m['recovered_provider'])
   tarjeta(y,'Reparadas · retorno de Service 109',m['returned_units'],m['returned_value'])
   tarjeta(z,'Regresadas a sucursales',salidas_sucursales,val_egresos)
+  st.info('Criterio de período: stock inicial ≈900 (estimado en enero); ingresos nuevos solo desde el 01/04/2026; solicitudes de proveedores desde el 07/01/2026. No se interpreta la diferencia residual como mercadería faltante.')
   st.caption('Las valorizaciones de proveedores y Service son importes registrados en sus respectivos archivos SAP; no deben sumarse entre sí como si fueran recuperaciones únicas. Los ingresos al 055 excluyen los retornos del 109. Las unidades reparadas se cuentan al regresar del Service; los movimientos de salida y retorno no se suman entre sí como recuperaciones independientes.')
   section('Lectura ejecutiva de la gestión')
-  note(f"""<strong>Recuperación:</strong> se registraron <strong>{qty(m['nc_units']+m['physical_units'])} unidades</strong> recuperadas de proveedores, por <strong>{money(m['recovered_provider'])}</strong>. De ese total, {qty(m['nc_units'])} unidades corresponden a notas de crédito ({money(m['nc_value'])}) y {qty(m['physical_units'])} a productos nuevos o reparados ({money(m['physical_value'])}).<br><strong>Gestiones pendientes:</strong> permanecen {qty(m['pending_nc_units'])} unidades con remito abierto y sin NC, por {money(m['pending_nc_value'])}. Otras {qty(m['pending_send_units'])} unidades tienen solicitud abierta y todavía no salieron.<br><strong>Rotación:</strong> se gestionaron {qty(total_gestionado)} unidades (900 iniciales más {qty(entradas)} recibidas desde sucursales); {qty(salidas_sucursales)} unidades regresaron a sucursales. El stock actual del 055 es de {qty(m['stock_units'])} unidades.""")
+  note(f"""<strong>Recuperación:</strong> se registraron <strong>{qty(m['nc_units']+m['physical_units'])} unidades</strong> recuperadas de proveedores, por <strong>{money(m['recovered_provider'])}</strong>. De ese total, {qty(m['nc_units'])} unidades corresponden a notas de crédito ({money(m['nc_value'])}) y {qty(m['physical_units'])} a productos nuevos o reparados ({money(m['physical_value'])}).<br><strong>Gestiones pendientes:</strong> permanecen {qty(m['pending_nc_units'])} unidades con remito abierto y sin NC, por {money(m['pending_nc_value'])}. Otras {qty(m['pending_send_units'])} unidades tienen solicitud abierta y todavía no salieron.<br><strong>Rotación:</strong> se gestionaron {qty(total_gestionado)} unidades (≈900 iniciales más {qty(entradas)} ingresos nuevos desde abril); {qty(salidas_sucursales)} unidades regresaron a sucursales. El stock actual del 055 es de {qty(m['stock_units'])} unidades.""")
   section('Composición económica de la recuperación')
   st.bar_chart(pd.DataFrame({'Importe ARS':[m['nc_value'],m['physical_value']]},index=['Notas de crédito','Producto nuevo/reparado']),horizontal=True,color='#0b607b')
   st.caption('Los retornos de Service se informan aparte: no se suman al recuperado de proveedores para evitar duplicaciones.')
  with tabs[1]:
   section('Resultados por vía de recuperación')
   x,y=st.columns(2)
-  x.metric('Notas de crédito',money(m['nc_value']),qty(m['nc_units'])+' unidades')
+  x.metric('Notas de crédito registradas · desde 07/01',money(m['nc_value']),qty(m['nc_units'])+' unidades')
   y.metric('Productos nuevos / reparados',money(m['physical_value']),qty(m['physical_units'])+' unidades')
   section('Pendientes y estado de solicitudes')
   x,y=st.columns(2)

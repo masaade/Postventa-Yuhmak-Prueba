@@ -1,0 +1,1 @@
+V19: corte ingresos nuevos desde 01/04/2026; NC por Fecha Solicitud desde 07/01/2026; stock inicial aproximado 900. Instalar sobre el entorno V18 existente y conservar su modulo administracion, credenciales y datos. La diferencia residual no es faltante auditado. Los reportes de solicitudes siguen utilizandose para valorizar Service.
