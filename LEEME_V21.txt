@@ -1,0 +1,1 @@
+V21: Muestra la diapositiva original del PowerPoint, con el mismo diseño, como primera pestaña del tablero. Incluye botón para descargar el PowerPoint editable. Reemplazar app.py y copiar carpeta assets junto a app.py del proyecto V20. Conservar el resto de archivos y datos. La diapositiva es una imagen estática y no se actualiza al cargar nuevos Excel.

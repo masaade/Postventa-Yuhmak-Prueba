@@ -409,7 +409,7 @@ with st.sidebar:
 section('Consultas sobre el reporte')
 with st.expander('¿Tenés una consulta sobre estos indicadores?',expanded=False):
  with st.form('form_consulta_v17'):
-  section_name=st.selectbox('Sección del reporte',['Resumen ejecutivo','Recuperación y pendientes','Stock y Service','Evolución temporal','Ingresos y egresos','Detalle y PDF'])
+  section_name=st.selectbox('Sección del reporte',['Informe ejecutivo · 1 página','Resumen ejecutivo','Recuperación y pendientes','Stock y Service','Evolución temporal','Ingresos y egresos','Detalle y PDF'])
   period_name=st.text_input('Período o dato consultado (opcional)',placeholder='Ej.: segundo cuatrimestre 2026')
   question=st.text_area('Escribí tu consulta',max_chars=3000)
   send=st.form_submit_button('Enviar consulta')
@@ -481,8 +481,18 @@ if all((DATA/(k+'.xlsx')).exists() for k in SOURCES) and (DATA/'movimientos_055.
  st.success('Datos SAP disponibles · Última actualización: '+meta.get('uploaded','Sin registro')[:16].replace('T',' ')+' · Información publicada para usuarios autorizados',icon='✅')
  with st.expander('Fecha de corte y datos del informe',expanded=False):
   stockdate=st.date_input('Fecha de corte del stock (según SAP)',value=datetime.today().date(),help='Ingresá la fecha real del archivo de stock.')
- tabs=st.tabs(['Resumen ejecutivo','Recuperación y pendientes','Stock y Service','Evolución temporal','Ingresos y egresos','Detalle y PDF'])
+ tabs=st.tabs(['Informe ejecutivo · 1 página','Resumen ejecutivo','Recuperación y pendientes','Stock y Service','Evolución temporal','Ingresos y egresos','Detalle y PDF'])
  with tabs[0]:
+  # Reproducción visual exacta de la diapositiva PowerPoint, sin reconstruir el diseño.
+  from pathlib import Path as _ExecutivePath
+  _exec_root = _ExecutivePath(__file__).resolve().parent
+  _exec_png = _exec_root / 'assets' / 'reporte_ejecutivo.png'
+  _exec_pptx = _exec_root / 'assets' / 'Reporte_Ejecutivo_Postventa_Hogar_Final_Abril_2026.pptx'
+  st.image(str(_exec_png), use_container_width=True)
+  with open(_exec_pptx, 'rb') as _slide_file:
+   st.download_button('Descargar PowerPoint original', data=_slide_file.read(), file_name='Reporte_Ejecutivo_Postventa_Hogar_Final_Abril_2026.pptx', mime='application/vnd.openxmlformats-officedocument.presentationml.presentation')
+  st.caption('Vista del PowerPoint original. La imagen conserva exactamente su diseño; no se actualiza automáticamente al modificar los Excel del tablero.')
+ with tabs[1]:
   section('Indicadores principales · Rotación de mercadería')
   # Base estimada: ≈900 iniciales + ingresos desde el 01/04/2026.
   # No se incluyen transferencias 055 <-> 109 ni retornos de Service como ingresos nuevos.
@@ -536,7 +546,7 @@ if all((DATA/(k+'.xlsx')).exists() for k in SOURCES) and (DATA/'movimientos_055.
   # Service y proveedores son circuitos distintos: sus retornos se muestran por separado.
   x,y,z=st.columns(3)
   tarjeta(x,'Stock inicial estimado · enero',900,val_inicial)
-  tarjeta(y,'Ingresos nuevos desde abril',entradas,val_ingresos)
+  tarjeta(y,'Ingresos desde sucursales',entradas,val_ingresos)
   tarjeta(z,'Total de mercadería gestionada',total_gestionado,val_total)
   x,y,z=st.columns(3)
   tarjeta(x,'Resueltas con proveedores',resueltas_proveedor,m['recovered_provider'])
@@ -545,11 +555,11 @@ if all((DATA/(k+'.xlsx')).exists() for k in SOURCES) and (DATA/'movimientos_055.
   st.info('Criterio de período: stock inicial ≈900 (estimado en enero); ingresos nuevos solo desde el 01/04/2026; solicitudes de proveedores desde el 07/01/2026. No se interpreta la diferencia residual como mercadería faltante.')
   st.caption('Las valorizaciones de proveedores y Service son importes registrados en sus respectivos archivos SAP; no deben sumarse entre sí como si fueran recuperaciones únicas. Los ingresos al 055 excluyen los retornos del 109. Las unidades reparadas se cuentan al regresar del Service; los movimientos de salida y retorno no se suman entre sí como recuperaciones independientes.')
   section('Lectura ejecutiva de la gestión')
-  note(f"""<strong>Recuperación:</strong> se registraron <strong>{qty(m['nc_units']+m['physical_units'])} unidades</strong> recuperadas de proveedores, por <strong>{money(m['recovered_provider'])}</strong>. De ese total, {qty(m['nc_units'])} unidades corresponden a notas de crédito ({money(m['nc_value'])}) y {qty(m['physical_units'])} a productos nuevos o reparados ({money(m['physical_value'])}).<br><strong>Gestiones pendientes:</strong> permanecen {qty(m['pending_nc_units'])} unidades con remito abierto y sin NC, por {money(m['pending_nc_value'])}. Otras {qty(m['pending_send_units'])} unidades tienen solicitud abierta y todavía no salieron.<br><strong>Rotación:</strong> se gestionaron {qty(total_gestionado)} unidades (≈900 iniciales más {qty(entradas)} ingresos nuevos desde abril); {qty(salidas_sucursales)} unidades regresaron a sucursales. El stock actual del 055 es de {qty(m['stock_units'])} unidades.""")
+  note(f"""<strong>Recuperación:</strong> se registraron <strong>{qty(m['nc_units']+m['physical_units'])} unidades</strong> recuperadas de proveedores, por <strong>{money(m['recovered_provider'])}</strong>. De ese total, {qty(m['nc_units'])} unidades corresponden a notas de crédito ({money(m['nc_value'])}) y {qty(m['physical_units'])} a productos nuevos o reparados ({money(m['physical_value'])}).<br><strong>Gestiones pendientes:</strong> permanecen {qty(m['pending_nc_units'])} unidades con remito abierto y sin NC, por {money(m['pending_nc_value'])}. Otras {qty(m['pending_send_units'])} unidades tienen solicitud abierta y todavía no salieron.<br><strong>Rotación:</strong> se gestionaron {qty(total_gestionado)} unidades (≈900 iniciales más {qty(entradas)} ingresos desde sucursales); {qty(salidas_sucursales)} unidades regresaron a sucursales. El stock actual del 055 es de {qty(m['stock_units'])} unidades.""")
   section('Composición económica de la recuperación')
   st.bar_chart(pd.DataFrame({'Importe ARS':[m['nc_value'],m['physical_value']]},index=['Notas de crédito','Producto nuevo/reparado']),horizontal=True,color='#0b607b')
   st.caption('Los retornos de Service se informan aparte: no se suman al recuperado de proveedores para evitar duplicaciones.')
- with tabs[1]:
+ with tabs[2]:
   section('Resultados por vía de recuperación')
   x,y=st.columns(2)
   x.metric('Notas de crédito registradas · desde 07/01',money(m['nc_value']),qty(m['nc_units'])+' unidades')
@@ -564,7 +574,7 @@ if all((DATA/(k+'.xlsx')).exists() for k in SOURCES) and (DATA/'movimientos_055.
   st.dataframe(pd.DataFrame(table),hide_index=True,use_container_width=True,column_config={'Importe ($)':st.column_config.NumberColumn('Importe ($)',format='$ %.2f')})
   st.caption('Prioridad: NC documental > recuperación física > pendiente. Solicitud abierta = no enviada. Los retornos sin remito ni NC se reconocen por el criterio operativo confirmado.')
   if m['duplicados_posibles']:st.warning(f"Existen {m['duplicados_posibles']} renglones potencialmente duplicados; verificar antes de un cierre definitivo.")
- with tabs[2]:
+ with tabs[3]:
   section('Stock · fotografía actual')
   x,y,z=st.columns(3)
   x.metric('Referencia histórica', '900 unidades')
@@ -581,7 +591,7 @@ if all((DATA/(k+'.xlsx')).exists() for k in SOURCES) and (DATA/'movimientos_055.
   x.metric('Valor de envíos',money(m['sent_value']))
   y.metric('Valor de retornos',money(m['returned_value']))
   st.info(f"Conciliación por código de artículo: {qty(m['unmatched_units'])} unidades sin correspondencia exacta, con valor estimado de {money(m['unmatched_value'])}. No equivale a un pendiente definitivo de Service.")
- with tabs[3]:
+ with tabs[4]:
   section('Análisis mensual y cuatrimestral')
   st.caption('NC por fecha de emisión; Service por fecha de traslado. Retornos físicos y pendientes agrupados por fecha de solicitud (cohortes), no por fecha efectiva de retorno.')
   all_dates=[]
@@ -612,9 +622,9 @@ if all((DATA/(k+'.xlsx')).exists() for k in SOURCES) and (DATA/'movimientos_055.
   diff=q2['NC emitidas ($)']-q1['NC emitidas ($)']
   note(f"""<strong>Notas de crédito:</strong> en el primer cuatrimestre se emitieron {money(q1['NC emitidas ($)'])}; en el segundo, {money(q2['NC emitidas ($)'])}. Variación: <strong>{money(diff)}</strong>.<br><strong>Service:</strong> envíos de {qty(q1['Service enviados (u)'])} a {qty(q2['Service enviados (u)'])} unidades; retornos de {qty(q1['Service retornados (u)'])} a {qty(q2['Service retornados (u)'])} unidades. Las diferencias entre entradas y salidas no prueban pendientes definitivos.""")
   st.caption('Para comparar el stock histórico por mes o cuatrimestre se requieren archivos de stock de cada cierre. Para asignar retornos físicos al mes real, se necesita fecha efectiva de retorno.')
- with tabs[4]:
-  vista_movimientos()
  with tabs[5]:
+  vista_movimientos()
+ with tabs[6]:
   section('Auditoría y documentación')
   st.metric('Solicitudes registradas',qty(m['solicitudes_total']))
   st.metric('Notas de crédito documentadas',qty(m['nc_count']))
