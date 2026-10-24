@@ -1,0 +1,1 @@
+SOLUCION AL ERROR FileNotFoundError en Streamlit Cloud: el reporte PNG y PowerPoint estan incrustados en app.py. Reemplazar solamente app.py del proyecto por este archivo, sin necesidad de subir carpeta assets. Mantener archivos de datos, requirements.txt y otros modulos. La primera pestana muestra la misma diapositiva del PowerPoint y permite descargarla.
