@@ -1,0 +1,11 @@
+V55 - INSTALACION Y ACCESO DIRECTO YMK
+
+1. Extraer el ZIP en una carpeta fija (no ejecutar dentro del ZIP).
+2. Ejecutar INSTALAR_UNA_VEZ.bat y esperar a que termine. Requiere Python 3.11/3.12 de 64 bits e internet la primera vez.
+3. Ejecutar CREAR_ACCESO_DIRECTO.bat para crear YMK - Tablero Hogar en el escritorio, con icono YMK.ico.
+4. Abrir desde el acceso directo: no muestra consola una vez instaladas las dependencias.
+5. Si falla, ejecutar DIAGNOSTICO_TABLERO.bat y compartir el texto del error o inicio_tablero.log.
+6. Para detener el servidor usar DETENER_TABLERO.bat.
+7. Si vienes de una version anterior, copia tus archivos Excel SAP de la carpeta datos anterior a la nueva (sin sobrescribir archivos mas nuevos).
+
+La captura anterior no permite saber la causa exacta del error del lanzador oculto: hace falta el registro inicio_tablero.log.

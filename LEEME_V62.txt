@@ -1,0 +1,4 @@
+YUHMAK HOGAR V62 - DISEÑO UNIFICADO
+Se unifican encabezados, identidad YMK, barras de secciones, tarjetas KPI, métricas y tablas en todos los módulos, incluidos Ventas e incidencia y Administración.
+Se preservan las fórmulas, los filtros, las fuentes y la lógica de cálculo de V61.2.
+INSTALACIÓN: copiar app.py, administracion.py y executive_ui.py a la carpeta de la versión existente, reemplazando los anteriores. Conservar los Excel y demás archivos de datos de la instalación actual.

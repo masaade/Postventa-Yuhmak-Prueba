@@ -1,0 +1,10 @@
+V54 - INICIO RAPIDO SIN VENTANA NEGRA
+1. Extraer el ZIP completo en una carpeta definitiva (preferible fuera de OneDrive).
+2. Si es la primera vez en esta carpeta, ejecutar INSTALAR_UNA_VEZ.bat. Esperar a que instale.
+3. Ejecutar CREAR_ACCESO_DIRECTO.bat. Reemplaza el acceso directo YMK anterior.
+4. En adelante abrir solo YMK - Tablero Hogar desde el escritorio. NO reinstala bibliotecas.
+5. Para detener el servidor local, usar DETENER_TABLERO.bat. Cerrar solo el navegador NO detiene el servidor.
+6. Si falla, ejecutar DIAGNOSTICO_TABLERO.bat y compartir el registro.
+7. Se eliminaron advertencias obsoletas de use_container_width del código app.py y administracion.py.
+8. Se mantienen intactos los indicadores y rankings de V53.
+NOTA: Si ya cargaste archivos SAP en otra carpeta, copiar los cinco Excel guardados desde la carpeta datos antigua a la nueva antes de abrir. No sobrescribir datos de forma accidental.

@@ -1,0 +1,1 @@
+V34: Eliminado desplegable anidado redundante. Se conserva carga conjunta de cinco Excel SAP y carga independiente del sexto Excel de ventas.

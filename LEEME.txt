@@ -1,0 +1,1 @@
+V60.8: Se elimina exclusivamente la fila Solicitudes pendientes de envío de la tarjeta 03. Conserva los retornos 109 a 055 y los demás módulos. Cerrar el tablero y reemplazar app.py.

@@ -1,0 +1,1 @@
+V44: acceso visible a los dos módulos Postventa y Administración en la parte superior. Se conserva administracion.py y el resto de la V43 sin modificar. No altera las fórmulas ni el reporte CEO. Requiere prueba visual local.

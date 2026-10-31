@@ -1,0 +1,1 @@
+V47 corrige lectura directa de Marca/Rubro/Subrubro del Excel de ventas, porcentajes enteros en tablas y KPI, 2 gráficos y valorización de ventas. Conservar archivos de datos existentes al actualizar. CEO y Administración sin cambios. Requiere prueba visual local.

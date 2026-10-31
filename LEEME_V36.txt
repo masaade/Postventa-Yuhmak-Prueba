@@ -1,0 +1,1 @@
+V36: rediseño de la lectura de rotación. Unidades fuera del stock = total referencia menos stock actual. Stock remanente = trabajo pendiente en 055. Los pendientes en proveedor no se presentan como recuperos concretados. Se preservan carga de archivos, análisis de ventas y cierres mensuales. Verificar con SAP los cortes y categorías.

@@ -1,0 +1,1 @@
+V49: el paquete incluye REporte de Ventas(1).xlsx, que sí tiene Marca/Rubro/Subrubro. El anterior ventas_totales.xlsx no los tenía y por eso todos aparecían sin clasificar. Para instalaciones existentes, actualizar ventas desde Gestión por gestión > Ventas e incidencia. No se modificaron CEO ni Administración.\n

@@ -1,0 +1,13 @@
+YUHMAK HOGAR · V60 PARCHE SOBRE V59
+
+1. Cerrar el tablero.
+2. Extraer este ZIP dentro de la carpeta principal del tablero V59.
+3. Reemplazar app.py cuando Windows lo solicite.
+4. Abrir con el mismo acceso directo YMK.
+
+Se actualiza el archivo datos/movimientos_055.xlsx con el nuevo SAP valorizado.
+NO se reinstala Python ni se reemplazan los otros tres Excel.
+
+Conciliación: stock inicial 886; ingresos desde abril; NC, recuperación física, scrap, egresos a sucursales y stock actual.
+Scrap: $3.012.767,93; la cantidad debe ser confirmada en el control mensual.
+IMPORTANTE: movimientos SAP registrados como egresos pueden superponerse con recuperaciones físicas; diferencia de cierre no implica auditoría sin trazabilidad.

@@ -1,0 +1,1 @@
+V52: se eliminan todas las apariciones de «Ud.» en las tarjetas y tablas de Ventas e incidencia. Se mantienen los signos % y $, y las cifras sin cambios. Se conservan CEO y Administración.

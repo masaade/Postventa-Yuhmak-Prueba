@@ -1,0 +1,1 @@
+V33: recupera stock inicial 886 como base histórica 2026; mueve carga de 5 Excel a portada; incorpora carga de sexto Excel de ventas y vista previa. El cruce por producto/proveedor se habilitará tras validar el formato real de ventas. No se ha probado con Excel de ventas reales.

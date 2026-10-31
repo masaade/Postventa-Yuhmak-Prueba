@@ -1,0 +1,1 @@
+V46: porcentajes redondeados al entero más cercano SOLO en visualización; dos gráficos dinámicos (ingresos por marca y porcentaje por producto); ventas netas valorizadas por código y valor SAP de ingresos 055 solo cuando existe completo. Sin cambios al reporte CEO ni Administración. Requiere validación funcional con los cinco Excel SAP actuales.\n

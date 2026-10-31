@@ -1,0 +1,1 @@
+V60.2: ingresos desde 01/04/2026; egresos desde 01/01/2026 hasta mes de corte. Copiar app.py sobre carpeta existente con tablero cerrado. No reemplaza Excel ni configuraciones.

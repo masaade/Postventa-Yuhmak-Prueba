@@ -1,0 +1,1 @@
+V50: En Ventas e incidencia, porcentajes con %; ventas netas con $; unidades vendidas e ingresos al 055 con Ud. Formato argentino: $ 1.234.567,89, 12 %, 30 Ud. Se conserva el dato numérico para cálculos y rankings; se formatea solamente la tabla visible. Sin cambios en CEO ni Administración.

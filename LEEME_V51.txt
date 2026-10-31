@@ -1,0 +1,1 @@
+V51: quita Ud. en tarjetas y tablas de incidencias, muestra período seleccionado y referencia de ventas anuales, ordena rankings numéricamente de mayor a menor. Se conserva % y $. El total mensual no debe interpretarse como total anual. Reporte CEO y Administración sin cambios.

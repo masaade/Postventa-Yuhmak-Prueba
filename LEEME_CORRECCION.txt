@@ -1,0 +1,7 @@
+CORRECCIÓN V60 - FECHAS SAP
+
+1. Cerrar el tablero.
+2. Copiar app.py en la carpeta principal de la V59/V60 y reemplazar.
+3. Abrir desde el acceso directo YMK.
+
+No reemplaza los Excel ni reinstala dependencias.

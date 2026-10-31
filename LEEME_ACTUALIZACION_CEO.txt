@@ -1,0 +1,1 @@
+V24: interfaz original conservada, primera pestaña informe CEO actualizado. Las otras pestañas mantienen cálculos históricos (algunos con stock inicial 900), pendientes de actualización. Diferencia cero solo aritmética. No cargar datos sensibles en instancia pública.

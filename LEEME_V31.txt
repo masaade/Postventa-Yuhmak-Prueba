@@ -1,0 +1,1 @@
+V31: Se cambia Stock inicial ajustado por Stock inicial (886 unidades). Se conservan únicamente Ingresos y egresos dentro de Gestión por gestión. Se preservan los dos apartados principales y la carga de Excel.

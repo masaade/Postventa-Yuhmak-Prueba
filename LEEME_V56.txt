@@ -1,0 +1,1 @@
+V56: carga centralizada de seis Excel en un único panel desplegable encima de los módulos. No se solicitan ventas ni costos en cada pestaña. Para el error Missing optional dependency openpyxl, ejecutar REPARAR_DEPENDENCIAS.bat en la instalación activa y reiniciar el tablero. Para no perder datos, conservar carpeta datos. Reporte CEO y Administración sin cambios de cálculo.

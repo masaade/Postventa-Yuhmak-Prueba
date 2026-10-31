@@ -1,0 +1,13 @@
+TABLERO POSTVENTA YUHMAK - VISUAL STUDIO CODE (BASE V22)
+
+1. Instalar Python 3.11 o 3.12 y Visual Studio Code.
+2. Extraer el ZIP y abrir esta carpeta en Visual Studio Code: Archivo > Abrir carpeta.
+3. En Windows, hacer doble clic en INICIAR_TABLERO.bat. La primera ejecucion instala las dependencias y puede tardar varios minutos.
+4. Se abrira en el navegador una direccion local, normalmente http://localhost:8501.
+5. Para cargar informacion, utilizar las opciones de carga del tablero o colocar los archivos SAP en la carpeta datos, segun la configuracion del proyecto.
+6. Para detenerlo, cerrar la ventana de comandos o pulsar Ctrl+C.
+
+IMPORTANTE: Esta es la misma aplicacion Streamlit adaptada para ejecutarse localmente; Visual Studio Code es el editor, no una plataforma alternativa al navegador.
+El PowerPoint integrado en V22 es una imagen fija y no se actualiza automaticamente con nuevos Excel.
+No subir los Excel con datos sensibles a repositorios publicos.
+Se incluye administracion.py de la version V15 disponible, ya que app.py requiere ese modulo. Si tu instalacion en la nube usa una version posterior, reemplazalo por la del repositorio para mantener equivalencia exacta.

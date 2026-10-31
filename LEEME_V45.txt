@@ -1,0 +1,1 @@
+V45: el módulo Ventas e incidencia lee Marca, Rubro y Subrubro del reporte de ventas. Agrupa por código SAP y cruza con ingresos al 055. El porcentaje es incidencia de ingresos al 055 sobre ventas netas del período, NO tasa de fallas técnicas confirmadas. No se altera el CEO ni Administración.

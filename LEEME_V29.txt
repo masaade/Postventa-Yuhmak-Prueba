@@ -1,0 +1,9 @@
+V29 — Resumen CEO
+
+Cambios exclusivos en la primera pestaña:
+- Nuevo bloque de conciliación general inmediatamente después de las tres tarjetas financieras.
+- Diferencia aritmética de 0 unidades con desglose 886 + 718 = 361 + 457 + 388 + 143 + 189 + 66.
+- Eliminado el circuito de gestión de cuatro recuadros.
+- Gráficos y pestañas operativas sin cambios.
+
+IMPORTANTE: los indicadores de portada son el corte fijo de octubre 2026; las pestañas operativas conservan su lógica de actualización. El cierre aritmético requiere validar las 142 reclasificadas y evitar superposiciones de egresos/recuperaciones.

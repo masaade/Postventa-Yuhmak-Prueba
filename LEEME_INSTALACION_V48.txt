@@ -1,0 +1,15 @@
+YUHMAK HOGAR V48 — REINSTALACION Y ACCESO DIRECTO
+
+1. Extraer TODO el ZIP en una carpeta definitiva, por ejemplo Documentos\Yuhmak Hogar.
+2. Si tu equipo no tiene Python 3.12/3.11 de 64 bits, instalar Python 3.12 (64 bits) desde python.org, con Python Launcher.
+3. Doble clic en INICIAR_TABLERO.bat; la primera vez se descargan bibliotecas y necesita internet.
+4. Doble clic en CREAR_ACCESO_DIRECTO.bat. Aparecera "YMK - Tablero Hogar" en el escritorio con icono YMK.
+5. A partir de entonces abrir desde el acceso directo. NO borrar ni mover la carpeta despues de crear el acceso directo.
+6. El tablero abre en http://localhost:8501 y la ventana negra debe permanecer abierta mientras se usa.
+7. Cargar nuevamente los cinco Excel SAP actuales. El Excel de ventas incluido puede actualizarse en su modulo.
+8. Los datos cargados se almacenan en la carpeta datos; hacer copias de seguridad de ella.
+
+IMPORTANTE: El error anterior se producia porque pip intentaba compilar pandas usando herramientas Visual Studio.
+Este instalador exige Python 3.11/3.12 y paquetes binarios (no compilacion local).
+Si no hay un paquete binario compatible, muestra error sin intentar compilarlo.
+Se conservan los modulos de CEO, Postventa, Administracion y ventas/incidencias.

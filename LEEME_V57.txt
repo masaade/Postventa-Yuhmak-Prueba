@@ -1,0 +1,1 @@
+V57: FACT son las ventas, NCRED se informa aparte y NO se suma ni resta de la base de incidencia. Comparación importes, unidades, documentos y saldo comercial. Rankings numéricos descendentes con títulos sin «de mayor a menor». Se conservan Reporte CEO, Administración y carga única de seis Excel. Datos incluidos.

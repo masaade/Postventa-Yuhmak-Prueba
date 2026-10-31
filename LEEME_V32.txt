@@ -1,0 +1,8 @@
+V32 - Base mensual segura
+1) Iniciar: .venv\\Scripts\\python.exe -m streamlit run app.py
+2) Abrir «Gestión por gestión» > «Actualizar datos SAP» y cargar los 5 Excel juntos.
+3) Revisar el año y mes de corte en el reporte CEO.
+4) Los indicadores del CEO se calculan desde archivos; NO se conservan cifras fijas de octubre.
+5) La conciliación no se declara cerrada sin inventario de apertura, chatarra y validación de doble conteo.
+6) Stock/NC/proveedores son fotos de los archivos cargados; movimientos se filtran por mes. Para histórico de cortes mensuales hace falta guardar snapshots de cada mes.
+7) El tablero no implementa control de acceso; uso local solamente con información confidencial.

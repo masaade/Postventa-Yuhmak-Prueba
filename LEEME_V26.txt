@@ -1,0 +1,1 @@
+V26: Reorganiza exclusivamente la portada ejecutiva con espacios, bloques diferenciados y valorización visible. Mantiene los módulos del tablero V25. Los cálculos históricos de pestañas previas no se actualizaron automáticamente; la conciliación 0 es aritmética y requiere validaciones documentales.

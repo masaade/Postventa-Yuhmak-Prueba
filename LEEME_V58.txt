@@ -1,0 +1,1 @@
+V58: Excel de ventas actualizado. FACT y NCRED separados; rankings ordenados; un solo cuadro de productos mas vendidos. Mantener datos como respaldo.

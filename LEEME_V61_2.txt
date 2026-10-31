@@ -1,0 +1,12 @@
+YUHMAK HOGAR - V61.2 - CORRECCION VISUAL
+
+Problema corregido: el HTML del resumen ejecutivo se mostraba como texto en Streamlit.
+Solucion: renderizado en componente HTML de Streamlit.
+
+INSTALACION
+1. Cerrar el tablero.
+2. Extraer este ZIP en la carpeta de la V61.1 y reemplazar SOLO app.py.
+3. Conservar executive_ui.py y administracion.py de la V61.1.
+4. Abrir nuevamente YMK.
+
+No se modifican datos ni formulas. El resumen se muestra dentro de un panel con desplazamiento si la altura de pantalla es insuficiente.

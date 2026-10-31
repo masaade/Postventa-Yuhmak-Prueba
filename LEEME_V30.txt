@@ -1,0 +1,1 @@
+V30: navegación Postventa / Administración visible arriba; sidebar oculto; tarjeta 03 sin unidades contabilizadas ni diferencia aritmética. La conciliación detallada se conserva debajo de las tarjetas.

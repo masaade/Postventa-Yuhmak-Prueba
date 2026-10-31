@@ -1,0 +1,1 @@
+V42: se retira únicamente la carga de ventas del Reporte ejecutivo CEO. Los cinco Excel SAP siguen cargándose en su panel original. Ventas y maestro de marcas se cargan desde Gestión por gestión > Ventas e incidencia. No se modificaron fórmulas, tarjetas ni gráficos del CEO.

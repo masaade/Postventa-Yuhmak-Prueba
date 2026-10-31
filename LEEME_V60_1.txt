@@ -1,0 +1,7 @@
+ACTUALIZACION PARCIAL V60.1 SOBRE V59/V60
+1. Cerrar el tablero.
+2. Copiar app.py en la carpeta del tablero y reemplazar.
+3. No reemplazar ni eliminar la carpeta datos ni reinstalar Python.
+
+Cambios: 886 iniciales; 66 scrap ($3.012.767,93); pendientes proveedor como destino temporal; una sola fila chatarra; guardado de cierre solo si diferencia aritmetica cero.
+IMPORTANTE: no se fuerza el cierre a cero ni se certifica trazabilidad. Los movimientos SAP pueden superponerse con NC o recuperaciones.

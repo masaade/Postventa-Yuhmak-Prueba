@@ -1,0 +1,1 @@
+V37: el cuadro de avance de gestión se muestra inmediatamente después de las tres tarjetas ejecutivas y antes de la conciliación. Se mantiene la lógica de cálculo y se aclara que fuera del stock no equivale a recupero finalizado. El stock SAP debe corresponder al período elegido.

@@ -1,0 +1,10 @@
+V61 TABLERO EJECUTIVO DINAMICO
+
+1. Cerrar el tablero YMK.
+2. Copiar app.py y administracion.py en la carpeta del tablero actual, reemplazando los archivos anteriores.
+3. NO borrar la carpeta datos ni el entorno .venv.
+4. Abrir YMK y navegar por la barra lateral.
+5. Los cuatro Excel se actualizan desde la barra lateral.
+
+Se incluye el modulo administracion.py para evitar dependencia faltante.
+Se mantiene V60.8 como respaldo.

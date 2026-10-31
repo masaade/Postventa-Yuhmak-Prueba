@@ -1,0 +1,1 @@
+Se incorporaron los seis Excel cargados el 30/10/2026 en datos/. Para actualizar en el futuro usar el panel de carga unica. La version V56 y sus calculos no se modificaron.
