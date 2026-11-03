@@ -59,24 +59,7 @@ h2{font-size:1.43rem!important}h3{font-size:1.13rem!important}
 .stButton>button[kind="primary"],.stDownloadButton>button[kind="primary"]{background:#064d65!important;border:1px solid #064d65!important;color:white!important;border-radius:11px!important;font-weight:750!important;min-height:44px}
 .stButton>button,.stDownloadButton>button{border-radius:11px!important;font-weight:700!important}
 [data-testid="stSelectbox"],[data-testid="stDateInput"]{border-radius:10px}
-
-[data-testid="stSidebar"] [data-testid="stExpander"] {
-    background: #ffffff !important;
-    color: #022f40 !important;
-    border: 1px solid #dce7ed !important;
-    border-radius: 13px !important;
-}
-
-[data-testid="stSidebar"] [data-testid="stExpander"] p,
-[data-testid="stSidebar"] [data-testid="stExpander"] span,
-[data-testid="stSidebar"] [data-testid="stExpander"] label,
-[data-testid="stSidebar"] [data-testid="stExpander"] summary,
-[data-testid="stSidebar"] [data-testid="stExpander"] small,
-[data-testid="stSidebar"] [data-testid="stExpander"] button {
-    color: #022f40 !important;
-    -webkit-text-fill-color: #022f40 !important;
-}
-
+[data-testid="stExpander"]{background:#fff;border:1px solid #dce7ed;border-radius:13px}
 [data-testid="stVerticalBlock"]>div:has(> [data-testid="stMetric"]){min-width:0}
 [data-testid="stCaptionContainer"]{color:#6a8190}
 @media(max-width:800px){.block-container{padding:1rem .85rem 3rem!important}.hero{padding:26px 23px;border-radius:16px}.hero:after{opacity:.35}.hero h1{font-size:1.75rem!important}[data-testid="stMetric"]{min-height:116px;padding:16px}}
@@ -906,7 +889,7 @@ if pagina=='🏠 Resumen ejecutivo':
  view_data=dict(initial=initial,in_qty=in_qty,stock=float(m['stock_units']),out_qty=out_qty,nc_units=float(m['nc_units']),physical_units=float(m['physical_units']),pending_units=float(m['pending_send_units']),nc_value=float(m['nc_value']),physical_value=float(m['physical_value']),ret=ret_qty,ret_value=value_raw(service_ret),sent=sent_qty,out_other=out_qty-sent_qty,trend=trend_vals,month=month,period=f'{month:02d}/{year}')
  # Renderizar HTML/CSS como documento real, evitando que Markdown muestre etiquetas como texto.
  import streamlit.components.v1 as components
- components.html(executive_ui.CSS + executive_ui.render(view_data), height=690, scrolling=True)
+ components.html(executive_ui.CSS + executive_ui.render(view_data), height=820, scrolling=True)
 elif pagina=='📦 Stock y movimientos':
  st.markdown('<div class="v61-strip">STOCK Y MOVIMIENTOS · 055</div>',unsafe_allow_html=True)
  a,b,c=st.columns(3)
@@ -932,46 +915,3 @@ else:
  st.markdown('<div class="v61-strip">REPORTES Y EXPORTACIÓN</div>',unsafe_allow_html=True)
  st.download_button('Exportar movimientos clasificados (CSV)',data=mov.to_csv(index=False).encode('utf-8-sig'),file_name='Movimientos_055_V61.csv',mime='text/csv')
  st.dataframe(mov,width='stretch')
-
-# V62 - Contraste definitivo del panel de carga
-st.markdown("""
-<style>
-/* Panel blanco de carga */
-section[data-testid="stSidebar"] [data-testid="stExpander"],
-section[data-testid="stSidebar"] [data-testid="stExpanderDetails"] {
-    background-color: #FFFFFF !important;
-    color: #022F40 !important;
-}
-
-/* Todos los textos dentro del panel */
-section[data-testid="stSidebar"] [data-testid="stExpander"] p,
-section[data-testid="stSidebar"] [data-testid="stExpander"] span,
-section[data-testid="stSidebar"] [data-testid="stExpander"] label,
-section[data-testid="stSidebar"] [data-testid="stExpander"] small,
-section[data-testid="stSidebar"] [data-testid="stExpander"] summary,
-section[data-testid="stSidebar"] [data-testid="stExpander"] summary * {
-    color: #022F40 !important;
-    -webkit-text-fill-color: #022F40 !important;
-}
-
-/* Área de selección de Excel */
-section[data-testid="stSidebar"] [data-testid="stFileUploaderDropzone"] {
-    background-color: #F1F5F9 !important;
-    border: 2px dashed #8DA8B8 !important;
-}
-
-section[data-testid="stSidebar"] [data-testid="stFileUploaderDropzone"] *,
-section[data-testid="stSidebar"] [data-testid="stFileUploader"] button,
-section[data-testid="stSidebar"] [data-testid="stFileUploader"] button * {
-    color: #022F40 !important;
-    -webkit-text-fill-color: #022F40 !important;
-}
-
-/* Botón para seleccionar archivos */
-section[data-testid="stSidebar"] [data-testid="stFileUploader"] button {
-    background-color: #FFC107 !important;
-    border: 1px solid #D9A400 !important;
-    font-weight: 700 !important;
-}
-</style>
-""", unsafe_allow_html=True)

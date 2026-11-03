@@ -1,8 +1,6 @@
-.venv/
-__pycache__/
-*.pyc
-datos/*.xlsx
-datos/*.xls
-datos/*.csv
-datos/*.db
+datos/
+*.xlsx
+*.xls
+*.sqlite3
 .streamlit/secrets.toml
+__pycache__/
