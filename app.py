@@ -873,8 +873,20 @@ fechas=mov['_fecha'].dropna()
 if fechas.empty:
  st.error('No se encontraron fechas válidas en los movimientos SAP.');st.stop()
 years=sorted(set(int(x) for x in fechas.dt.year.unique()),reverse=True)
+# Filtros de consulta compactos, compartidos por todas las vistas.
+st.markdown("""<style>
+/* V63.2: barra temporal compacta e institucional */
+div[data-testid="stHorizontalBlock"]:has(.ymk-filter-marker) {background:#fff;border:1px solid #d7e5ec;border-radius:13px;padding:10px 15px 5px;box-shadow:0 2px 10px rgba(2,47,64,.045);margin:2px 0 14px;align-items:end}
+div[data-testid="stSelectbox"] label {font-size:.77rem!important;font-weight:750!important;color:#28556a!important;margin-bottom:2px!important}
+div[data-testid="stSelectbox"] [data-baseweb="select"]>div {background:#fff!important;border:1px solid #cddfe8!important;border-radius:9px!important;min-height:39px!important;box-shadow:none!important;color:#07374c!important}
+div[data-testid="stSelectbox"] [data-baseweb="select"]>div:hover {border-color:#05728d!important}
+div[data-testid="stSelectbox"] [data-baseweb="select"] input {color:#07374c!important}
+@media(max-width:750px){div[data-testid="stHorizontalBlock"]:has(.ymk-filter-marker){padding:9px}}
+</style>""",unsafe_allow_html=True)
 filter1,filter2=st.columns([1,1])
-with filter1: year=st.selectbox('Año',years,key='v61_year')
+with filter1:
+ st.markdown('<span class="ymk-filter-marker" style="display:none"></span>',unsafe_allow_html=True)
+ year=st.selectbox('Año',years,key='v61_year')
 months=sorted(set(int(x) for x in fechas[fechas.dt.year.eq(year)].dt.month.unique()))
 with filter2: selected_period=st.selectbox('Período de consulta',[0]+months,format_func=lambda x:'Acumulado anual' if x==0 else ['','Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'][x],key='v631_period')
 month=max(months) if months else 12
@@ -952,7 +964,7 @@ elif pagina=='🏠 Resumen ejecutivo':
  trend_df=scoped.copy();trend_df['_mes']=trend_df['_fecha'].dt.month
  trend_df=trend_df.pivot_table(index='_mes',columns='TIPO',values='_unidades',aggfunc='sum',fill_value=0).reindex(range(1,13),fill_value=0).reindex(columns=['ingresos','egresos'],fill_value=0)
  trend_vals=[(float(r['ingresos']),float(r['egresos'])) for _,r in trend_df.iterrows()]
- view_data=dict(doa_expense=gastos_doa(year),scrap_expense=3012767.93,initial=initial,in_qty=in_qty,stock=float(m['stock_units']),out_qty=out_qty,nc_units=float(m['nc_units']),physical_units=float(m['physical_units']),pending_units=float(m['pending_send_units']),nc_value=float(m['nc_value']),physical_value=float(m['physical_value']),ret=ret_qty,ret_value=value_raw(service_ret),sent=sent_qty,out_other=out_qty-sent_qty,trend=trend_vals,month=month,period=f'{month:02d}/{year}')
+ view_data=dict(doa_expense=gastos_doa(year,selected_period),scrap_expense=(3012767.93 if selected_period==0 and year==2026 else None),initial=initial,in_qty=in_qty,stock=float(m['stock_units']),out_qty=out_qty,nc_units=float(m['nc_units']),physical_units=float(m['physical_units']),pending_units=float(m['pending_send_units']),nc_value=float(m['nc_value']),physical_value=float(m['physical_value']),ret=ret_qty,ret_value=value_raw(service_ret),sent=sent_qty,out_other=out_qty-sent_qty,trend=trend_vals,month=month,period=f'{month:02d}/{year}')
  # Renderizar HTML/CSS como documento real, evitando que Markdown muestre etiquetas como texto.
  import streamlit.components.v1 as components
  components.html(executive_ui.CSS + executive_ui.render(view_data), height=820, scrolling=True)
