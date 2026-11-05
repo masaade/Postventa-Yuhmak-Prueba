@@ -59,3 +59,38 @@ For `use_container_width=True`, use `width='stretch'`. For `use_container_width=
 2026-11-03 15:42:12.103 Please replace `st.components.v1.html` with `st.iframe`.
 
 `st.components.v1.html` will be removed after 2026-06-01.
+2026-11-05 13:50:16.248 An update to the [server] config option section was detected. To have these changes be reflected, please restart streamlit.
+2026-11-05 13:50:16.255 
+'server.enableCORS=false' tells Streamlit not to limit cross-origin access.
+Streamlit sends the header 'Access-Control-Allow-Origin: *', except on the file
+upload routes, which stay pinned to the app address and still require a valid
+XSRF token.
+Streamlit also accepts a WebSocket connection from any origin.
+Streamlit does not set 'server.enableCORS' to 'true' for you.
+'server.enableXsrfProtection=true' does not stop a cross-origin WebSocket
+connection, because Streamlit does not need a valid XSRF token to open one.
+
+To limit cross-origin access, do these steps:
+  1. Set 'server.enableCORS=true'.
+  2. Put the origins that you trust in 'server.corsAllowedOrigins'.
+
+'server.allowedHosts' can also limit the hostnames that Streamlit accepts on a
+WebSocket connection.
+
+2026-11-05 13:50:16.535 
+'server.enableCORS=false' tells Streamlit not to limit cross-origin access.
+Streamlit sends the header 'Access-Control-Allow-Origin: *', except on the file
+upload routes, which stay pinned to the app address and still require a valid
+XSRF token.
+Streamlit also accepts a WebSocket connection from any origin.
+Streamlit does not set 'server.enableCORS' to 'true' for you.
+'server.enableXsrfProtection=true' does not stop a cross-origin WebSocket
+connection, because Streamlit does not need a valid XSRF token to open one.
+
+To limit cross-origin access, do these steps:
+  1. Set 'server.enableCORS=true'.
+  2. Put the origins that you trust in 'server.corsAllowedOrigins'.
+
+'server.allowedHosts' can also limit the hostnames that Streamlit accepts on a
+WebSocket connection.
+

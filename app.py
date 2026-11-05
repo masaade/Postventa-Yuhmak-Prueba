@@ -511,10 +511,18 @@ def current_data():
     return metrics,movements,dfs
 
 def carga_excel_sap():
- """Carga central de cuatro archivos. Valida todo antes de reemplazar."""
+ """Carga central de cuatro archivos. Valida todo antes de reemplazar. Protegida con clave Admin."""
  st.caption('Cargá los cuatro Excel juntos: Stock 055, Ingresos y egresos 055, Notas de crédito 055 y Ventas. No se requieren solicitudes de traslado.')
- if role!='admin':
-  st.info('Solo el administrador puede actualizar los datos.');return
+    
+ # Acceso de pruebas: no usar contraseña fija en código.
+ if 'admin_auth' not in st.session_state:st.session_state['admin_auth']=False
+ pwd=st.text_input('Clave de Administrador',type='password',key='pwd_admin_input')
+ expected=st.secrets.get('ADMIN_PASSWORD','')
+ if pwd and expected and pwd==expected:st.session_state['admin_auth']=True
+ elif pwd:st.error('Clave incorrecta');st.session_state['admin_auth']=False
+ if not st.session_state['admin_auth']:
+  st.info('Solo administradores pueden actualizar datos. Configurar ADMIN_PASSWORD en secretos de Streamlit.')
+  return
  files=st.file_uploader('Seleccionar los 4 archivos Excel',type=['xlsx'],accept_multiple_files=True,key='carga_cuatro_v59')
  names={'stock':'Stock 055','movimientos':'Ingresos y egresos 055','nc':'Notas de crédito 055','ventas':'Reporte de ventas'}
  if not files:
@@ -652,16 +660,10 @@ def vista_ventas_incidencia():
  c2.metric('Ingresos al 055',qty(result['ingresos_055'].sum()))
  rate=100*result['ingresos_055'].sum()/result['vendidas'].sum() if result['vendidas'].sum()>0 else None
  c3.metric('Incidencia sobre ventas',f'{rate:.0f} %' if rate is not None else 'Sin base')
- st.metric('Facturación valorizada (FACT)',money(result['ventas_valorizadas'].sum()))
  nc_comercial=sales[sales['_tipo'].eq('NCRED')]
  fact_comercial=sales[sales['_tipo'].eq('FACT')]
  total_nc=nc_comercial['_importe'].abs().sum()
  total_fact=fact_comercial['_importe'].abs().sum()
- a,b,c=st.columns(3)
- a.metric('Facturación FACT',money(total_fact))
- b.metric('Notas de crédito NCRED',money(total_nc))
- c.metric('NC sobre FACT',f'{100*total_nc/total_fact:.0f} %' if total_fact else 'Sin base')
- st.caption('Ventas e incidencia utilizan solo FACT. NCRED se presenta aparte y no reduce las unidades facturadas.')
  if not ingress.empty and ingress['_valor'].notna().all():
   st.metric('Ingresos al 055 valorizados · SAP',money(ingress['_valor'].sum()))
  else:
@@ -685,35 +687,36 @@ def vista_ventas_incidencia():
   names={'_codigo':'Código SAP','producto':'Producto','marca':'Marca','rubro':'Rubro','subrubro':'Subrubro','vendidas':'Vendidos','ingresos_055':'Ingresos al 055','incidencia_pct':'Incidencia (%)','ventas_valorizadas':'Ventas netas ($)'}
   st.dataframe(view.rename(columns=names),hide_index=True,width="stretch")
  columns=['_codigo','producto','marca','rubro','vendidas','ingresos_055','incidencia_pct','ventas_valorizadas']
+ top_n=st.selectbox('Cantidad de posiciones', [10,20],key='ranking_top_n')
  st.markdown('#### Productos más vendidos')
  st.caption('Incluye productos sin ingresos al 055.')
  ventas_ranking=result[result['vendidas']>0].sort_values(['vendidas','ventas_valorizadas','_codigo'],ascending=[False,False,True],kind='stable')
  if ventas_ranking.empty:st.info('No hay unidades vendidas en el período seleccionado.')
- else:show_incidence(ventas_ranking,columns)
+ else:show_incidence(ventas_ranking.head(top_n),columns)
  st.markdown('#### Productos con mayor incidencia')
  if ranked.empty:st.info('No hay productos con ingresos al 055 y suficientes ventas en el período.')
- else:show_incidence(ranked,columns)
+ else:show_incidence(ranked.head(top_n),columns)
  st.markdown('#### Productos con más ingresos al 055')
  frequent=result[result['ingresos_055']>0].sort_values('ingresos_055',ascending=False)
- show_incidence(frequent,columns)
+ show_incidence(frequent.head(top_n),columns)
  st.markdown('#### Ranking por marca')
  brands=result[~result['marca'].str.startswith('Sin marca')].groupby('marca',as_index=False)[['vendidas','ingresos_055','ventas_valorizadas']].sum()
  brands['incidencia_pct']=100*brands['ingresos_055']/brands['vendidas'].where(brands['vendidas']>0)
- show_incidence(brands.sort_values(['incidencia_pct','ingresos_055'],ascending=[False,False],na_position='last'),['marca','vendidas','ingresos_055','incidencia_pct','ventas_valorizadas'])
+ show_incidence(brands.sort_values(['incidencia_pct','ingresos_055'],ascending=[False,False],na_position='last').head(top_n),['marca','vendidas','ingresos_055','incidencia_pct','ventas_valorizadas'])
  st.markdown('#### Ranking por rubro')
  rubros=result[~result['rubro'].str.startswith('Sin rubro')].groupby('rubro',as_index=False)[['vendidas','ingresos_055','ventas_valorizadas']].sum()
  rubros['incidencia_pct']=100*rubros['ingresos_055']/rubros['vendidas'].where(rubros['vendidas']>0)
- show_incidence(rubros.sort_values(['incidencia_pct','ingresos_055'],ascending=[False,False],na_position='last'),['rubro','vendidas','ingresos_055','incidencia_pct','ventas_valorizadas'])
+ show_incidence(rubros.sort_values(['incidencia_pct','ingresos_055'],ascending=[False,False],na_position='last').head(top_n),['rubro','vendidas','ingresos_055','incidencia_pct','ventas_valorizadas'])
  st.markdown('#### Gráficos de incidencia')
  left,right=st.columns(2)
  with left:
   st.markdown('**Marcas con más ingresos al 055 (unidades)**')
-  chart=brands.nlargest(10,'ingresos_055').sort_values('ingresos_055',ascending=True).set_index('marca')['ingresos_055']
+  chart=brands.nlargest(top_n,'ingresos_055').sort_values('ingresos_055',ascending=True).set_index('marca')['ingresos_055']
   if chart.empty:st.info('No hay marcas identificadas.')
   else:st.bar_chart(chart,horizontal=True,sort=False)
  with right:
   st.markdown('**Productos con mayor incidencia (%)**')
-  top=ranked.head(10).sort_values('incidencia_pct',ascending=True).copy()
+  top=ranked.head(top_n).sort_values('incidencia_pct',ascending=True).copy()
   if top.empty:st.info('No hay productos con ventas suficientes.')
   else:
    top['Etiqueta']=top['_codigo'].astype(str)+' · '+top['producto'].astype(str).str.slice(0,22)
@@ -833,14 +836,27 @@ st.markdown("""<style>
 with st.sidebar:
  st.markdown('<div class="ymk-brand"><strong>YMK</strong><span>HOGAR</span></div>',unsafe_allow_html=True)
  st.caption('POSTVENTA · DEPÓSITO 055')
- pagina=st.radio('Vistas', ['🏠 Resumen ejecutivo','📦 Stock y movimientos','💰 Recuperación económica','🔧 Servicio 109','📊 Ventas e incidencia','📄 Reportes y exportación','⚙️ Administración'],label_visibility='collapsed')
+ pagina=st.radio('Vistas', ['🏠 Resumen ejecutivo','📦 Stock y movimientos','💰 Recuperación económica','🔧 Almacén de Reparación 109','📊 Ventas e incidencia','⚙️ Administración'],label_visibility='collapsed')
  st.divider()
  with st.expander('Actualizar los cuatro Excel',expanded=False):
   carga_excel_sap()
+ with st.expander('Gastos fuera de DOA · Finanzas',expanded=False):
+  st.caption('Actualizar archivo únicamente con acceso de administrador.')
+  if st.session_state.get('admin_auth',False):
+   f=st.file_uploader('Excel de pagos fuera de DOA',type=['xlsx'],key='finanzas_v631')
+   if f is not None and st.button('Guardar archivo de Finanzas'):
+    required={'Fecha contabilizacion','Importe débito','Importe del Crédito'}
+    try:
+     headers=set(pd.read_excel(io.BytesIO(f.getvalue()),nrows=0).columns)
+     if not required.issubset(headers):st.error('Faltan columnas obligatorias de Finanzas.')
+     else:
+      (DATA/'pagos_fuera_doa.xlsx').write_bytes(f.getvalue());st.success('Archivo de Finanzas actualizado.')
+    except Exception as ex:st.error(str(ex))
+  else:st.info('Autenticarse primero en el módulo de actualización SAP.')
  st.caption('V61.1 · Diseño ejecutivo dinámico')
 
 if pagina!='🏠 Resumen ejecutivo':
- titulos={'📦 Stock y movimientos':'Stock y movimientos','💰 Recuperación económica':'Recuperación económica','🔧 Servicio 109':'Servicio técnico 109','📊 Ventas e incidencia':'Ventas e incidencia','📄 Reportes y exportación':'Reportes y exportación','⚙️ Administración':'Administración · EERR Hogar'}
+ titulos={'📦 Stock y movimientos':'Stock y movimientos','💰 Recuperación económica':'Recuperación económica','🔧 Almacén de Reparación 109':'Almacén de Reparación 109','📊 Ventas e incidencia':'Ventas e incidencia','⚙️ Administración':'Administración · EERR Hogar'}
  titulo=html.escape(titulos.get(pagina,'Postventa'))
  st.markdown(f'<div class="v61-head"><div class="v61-brand"><strong>YMK</strong><small>HOGAR</small></div><div><h1>{titulo}</h1><p>Yuhmak Hogar · Tablero de gestión</p></div><div class="v61-head-tag">PANEL EJECUTIVO</div></div>',unsafe_allow_html=True)
 if pagina=='⚙️ Administración':
@@ -860,8 +876,12 @@ years=sorted(set(int(x) for x in fechas.dt.year.unique()),reverse=True)
 filter1,filter2=st.columns([1,1])
 with filter1: year=st.selectbox('Año',years,key='v61_year')
 months=sorted(set(int(x) for x in fechas[fechas.dt.year.eq(year)].dt.month.unique()))
-with filter2: month=st.selectbox('Mes de corte',months,index=len(months)-1,format_func=lambda x:['','Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'][x],key='v61_month')
+with filter2: selected_period=st.selectbox('Período de consulta',[0]+months,format_func=lambda x:'Acumulado anual' if x==0 else ['','Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'][x],key='v631_period')
+month=max(months) if months else 12
 cutoff=pd.Timestamp(year,month,1)+pd.offsets.MonthEnd(0)
+period_start=pd.Timestamp(year,selected_period,1) if selected_period else pd.Timestamp(year,1,1)
+period_end=(period_start+pd.offsets.MonthEnd(0)) if selected_period else cutoff
+period_mov=mov[mov['_fecha'].between(period_start,period_end)].copy()
 scoped=mov[mov['_fecha'].between(pd.Timestamp(year,1,1),cutoff)].copy()
 since_apr=mov[mov['_fecha'].between(pd.Timestamp(year,4,1),cutoff)].copy() if month>=4 else mov.iloc[:0].copy()
 ins=since_apr[since_apr['TIPO'].eq('ingresos')]
@@ -882,36 +902,82 @@ def units_raw(frame):return float(pd.to_numeric(frame['Quantity'],errors='coerce
 def value_raw(frame):
  v=frame['Stock Valorizado'];num=pd.to_numeric(v,errors='coerce');parsed=pd.to_numeric(v.astype('string').str.replace('.','',regex=False).str.replace(',','.',regex=False),errors='coerce');return float(num.fillna(parsed).abs().sum())
 sent_qty=units_raw(service_sent);ret_qty=units_raw(service_ret)
-if pagina=='🏠 Resumen ejecutivo':
+def gastos_doa(period_year,period_month=None):
+ path=DATA/'pagos_fuera_doa.xlsx'
+ if not path.exists():return None
+ try:
+  df=pd.read_excel(path)
+  needed=['Fecha contabilizacion','Importe débito','Importe del Crédito']
+  if any(c not in df.columns for c in needed):return None
+  dt=df['Fecha contabilizacion']
+  if pd.api.types.is_numeric_dtype(dt):dt=pd.to_datetime(dt,unit='D',origin='1899-12-30',errors='coerce')
+  else:dt=pd.to_datetime(dt,errors='coerce',dayfirst=True)
+  v=numeric(df['Importe débito'])-numeric(df['Importe del Crédito'])
+  mask=dt.dt.year.eq(period_year)
+  if period_month:mask &=dt.dt.month.eq(period_month)
+  return float(v[mask].sum())
+ except Exception:return None
+
+def recuperacion_periodo(d,period_year,period_month=None):
+ nc=d['nc'].copy()
+ for col in ['Fecha Nota Crédito','Fecha Devolución','Fecha Solicitud']:
+  nc[col+'_dt']=date_col(nc[col]) if col in nc else pd.NaT
+ state=nc['Estado Solicitud'].astype('string').fillna('').str.lower()
+ devstate=nc['Estado Devolución'].astype('string').fillna('').str.lower()
+ hasnc=ids(nc['Nro Nota Crédito']).ne('')
+ cancel=state.str.contains('cancel|anulad',na=False)
+ openreq=state.str.contains('abiert',na=False)
+ issued=(~cancel)&(~openreq)&hasnc
+ physical=(~cancel)&(~openreq)&(~hasnc)&state.str.contains('cerrad',na=False)&devstate.str.contains('cerrad',na=False)
+ def within(date):
+  mask=date.dt.year.eq(period_year)
+  return mask & date.dt.month.eq(period_month) if period_month else mask
+ q=numeric(nc['Cantidad']);v=numeric(nc['Total (ML)'])
+ nmask=issued&within(nc['Fecha Nota Crédito_dt'])
+ pmask=physical&within(nc['Fecha Devolución_dt'])
+ return dict(nc_units=float(q[nmask].sum()),nc_value=float(v[nmask].sum()),physical_units=float(q[pmask].sum()),physical_value=float(v[pmask].sum()),missing_physical_dates=int((physical&nc['Fecha Devolución_dt'].isna()).sum()))
+
+if pagina=='🏠 Resumen ejecutivo' and selected_period:
+ st.markdown('### Resultado mensual · '+['','Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'][selected_period]+' '+str(year))
+ st.info('Los flujos corresponden al mes seleccionado. El stock histórico y la conciliación de existencias requieren un cierre de inventario a esa fecha; no se sustituyen por el stock actual.')
+ rec=recuperacion_periodo(dfs,year,selected_period)
+ a,b,c=st.columns(3)
+ with a:st.metric('Ingresos 055 (u.)',qty(period_mov.loc[period_mov['TIPO'].eq('ingresos'),'_unidades'].sum()))
+ with b:st.metric('Egresos 055 (u.)',qty(period_mov.loc[period_mov['TIPO'].eq('egresos'),'_unidades'].sum()))
+ with c:st.metric('Recuperación clasificada ($)',money(rec['nc_value']+rec['physical_value']))
+ executive_table([('NC emitidas · '+qty(rec['nc_units'])+' u.',money(rec['nc_value'])),('Nuevas / reparadas con fecha de devolución · '+qty(rec['physical_units'])+' u.',money(rec['physical_value'])),('Retornos del Almacén de Reparación 109 · '+qty(units_raw(service_ret[dates.loc[service_ret.index].ge(period_start)]))+' u.',money(value_raw(service_ret[dates.loc[service_ret.index].ge(period_start)]))),('Pagos por Reparaciones fuera de DOA',money(-gastos_doa(year,selected_period)) if gastos_doa(year,selected_period) is not None else 'Archivo Finanzas no cargado')])
+ if rec['missing_physical_dates']:st.warning('Hay '+str(rec['missing_physical_dates'])+' líneas físicas sin fecha de devolución; no se asignan arbitrariamente a un mes.')
+ st.caption('Scrap: gasto manual anual. No se asigna a meses sin fecha de realización registrada.')
+elif pagina=='🏠 Resumen ejecutivo':
  trend_df=scoped.copy();trend_df['_mes']=trend_df['_fecha'].dt.month
  trend_df=trend_df.pivot_table(index='_mes',columns='TIPO',values='_unidades',aggfunc='sum',fill_value=0).reindex(range(1,13),fill_value=0).reindex(columns=['ingresos','egresos'],fill_value=0)
  trend_vals=[(float(r['ingresos']),float(r['egresos'])) for _,r in trend_df.iterrows()]
- view_data=dict(initial=initial,in_qty=in_qty,stock=float(m['stock_units']),out_qty=out_qty,nc_units=float(m['nc_units']),physical_units=float(m['physical_units']),pending_units=float(m['pending_send_units']),nc_value=float(m['nc_value']),physical_value=float(m['physical_value']),ret=ret_qty,ret_value=value_raw(service_ret),sent=sent_qty,out_other=out_qty-sent_qty,trend=trend_vals,month=month,period=f'{month:02d}/{year}')
+ view_data=dict(doa_expense=gastos_doa(year),scrap_expense=3012767.93,initial=initial,in_qty=in_qty,stock=float(m['stock_units']),out_qty=out_qty,nc_units=float(m['nc_units']),physical_units=float(m['physical_units']),pending_units=float(m['pending_send_units']),nc_value=float(m['nc_value']),physical_value=float(m['physical_value']),ret=ret_qty,ret_value=value_raw(service_ret),sent=sent_qty,out_other=out_qty-sent_qty,trend=trend_vals,month=month,period=f'{month:02d}/{year}')
  # Renderizar HTML/CSS como documento real, evitando que Markdown muestre etiquetas como texto.
  import streamlit.components.v1 as components
  components.html(executive_ui.CSS + executive_ui.render(view_data), height=820, scrolling=True)
 elif pagina=='📦 Stock y movimientos':
  st.markdown('<div class="v61-strip">STOCK Y MOVIMIENTOS · 055</div>',unsafe_allow_html=True)
+ if selected_period:st.info('Movimientos del mes seleccionado. Stock actual y conciliación histórica no son calculables sin saldo de cierre del mes.')
  a,b,c=st.columns(3)
- with a:kpi('Stock inicial',qty(initial) if initial else 'N/D')
- with b:kpi('Ingresos desde abril',qty(in_qty))
- with c:kpi('Egresos desde enero',qty(out_qty))
- executive_table([('Stock actual',qty(m['stock_units'])+' u. · '+money(m['stock_value'])),('Egresos hacia otros almacenes',qty(out_qty-sent_qty)+' u.'),('Egresos hacia el Servicio 109',qty(sent_qty)+' u.'),('Egresos totales',qty(out_qty)+' u. · '+cashval(outs)),('Conciliación aritmética',qty(available-unit_dest)+' u.' if available is not None else 'N/D')])
+ with a:kpi('Stock inicial',qty(initial) if initial and not selected_period else 'N/D histórico')
+ with b:kpi('Ingresos '+('del mes' if selected_period else 'desde abril'),qty(period_mov.loc[period_mov['TIPO'].eq('ingresos'),'_unidades'].sum()) if selected_period else qty(in_qty))
+ with c:kpi('Egresos '+('del mes' if selected_period else 'desde enero'),qty(period_mov.loc[period_mov['TIPO'].eq('egresos'),'_unidades'].sum()) if selected_period else qty(out_qty))
+ executive_table([('Stock actual',('N/D histórico' if selected_period else qty(m['stock_units'])+' u. · '+money(m['stock_value']))),('Egresos hacia otros almacenes',qty(out_qty-sent_qty)+' u.' if not selected_period else 'Consultar movimientos mensuales'),('Egresos hacia el Almacén de Reparación 109',qty(sent_qty)+' u.' if not selected_period else 'Consultar sección 109'),('Egresos totales',qty(out_qty)+' u. · '+cashval(outs) if not selected_period else qty(period_mov.loc[period_mov['TIPO'].eq('egresos'),'_unidades'].sum())+' u.'),('Conciliación aritmética',qty(available-unit_dest)+' u.' if available is not None and not selected_period else 'N/D histórico')])
  vista_movimientos()
 elif pagina=='💰 Recuperación económica':
  st.markdown('<div class="v61-strip">RECUPERACIÓN ECONÓMICA</div>',unsafe_allow_html=True)
- executive_table([('Notas de crédito · '+qty(m['nc_units'])+' u.',money(m['nc_value'])),('Nuevas/reparadas · '+qty(m['physical_units'])+' u.',money(m['physical_value'])),('Recuperación clasificada',money(m['nc_value']+m['physical_value'])),('Solicitudes abiertas · '+qty(m['pending_send_units'])+' u.',money(m['pending_send_value'])),('Scrap · 66 u. (incluido en egresos)',money(3012767.93))])
- st.caption('Las solicitudes abiertas no son recuperaciones concretadas.')
-elif pagina=='🔧 Servicio 109':
- st.markdown('<div class="v61-strip">SERVICIO TÉCNICO 109</div>',unsafe_allow_html=True)
+ rec=recuperacion_periodo(dfs,year,selected_period or None)
+ executive_table([('Notas de crédito · '+qty(rec['nc_units'])+' u.',money(rec['nc_value'])),('Nuevas/reparadas · '+qty(rec['physical_units'])+' u.',money(rec['physical_value'])),('Recuperación clasificada',money(rec['nc_value']+rec['physical_value'])),('Solicitudes abiertas (estado actual)',money(m['pending_send_value']) if not selected_period else 'No reconstruible históricamente'),('Scrap · carga manual anual',money(-3012767.93) if not selected_period else 'Sin fecha mensual registrada')])
+ st.caption('Las solicitudes abiertas son una foto del estado actual, no un histórico mensual. Recuperaciones fechadas según NC y devolución.')
+ if rec['missing_physical_dates']:st.warning('Recuperaciones físicas sin fecha de devolución: '+str(rec['missing_physical_dates'])+' líneas no asignables a un mes.')
+elif pagina=='🔧 Almacén de Reparación 109':
+ st.markdown('<div class="v61-strip">ALMACÉN DE REPARACIÓN 109</div>',unsafe_allow_html=True)
  a,b=st.columns(2)
- with a:kpi('Envíos 055 → 109',qty(sent_qty)+' u.',money(value_raw(service_sent)))
- with b:kpi('Retornos 109 → 055',qty(ret_qty)+' u.',money(value_raw(service_ret)))
+ with a:kpi('Envíos 055 → 109',qty(units_raw(service_sent[dates.loc[service_sent.index].ge(period_start)]))+' u.',money(value_raw(service_sent[dates.loc[service_sent.index].ge(period_start)])))
+ with b:kpi('Retornos 109 → 055',qty(units_raw(service_ret[dates.loc[service_ret.index].ge(period_start)]))+' u.',money(value_raw(service_ret[dates.loc[service_ret.index].ge(period_start)])))
  st.caption('Movimientos SAP, no necesariamente unidades únicas ni una conciliación por número de serie.')
 elif pagina=='📊 Ventas e incidencia':
  st.markdown('<div class="v61-strip">VENTAS E INCIDENCIAS · INDICADORES Y RANKINGS</div>',unsafe_allow_html=True)
  vista_ventas_incidencia()
-else:
- st.markdown('<div class="v61-strip">REPORTES Y EXPORTACIÓN</div>',unsafe_allow_html=True)
- st.download_button('Exportar movimientos clasificados (CSV)',data=mov.to_csv(index=False).encode('utf-8-sig'),file_name='Movimientos_055_V61.csv',mime='text/csv')
- st.dataframe(mov,width='stretch')
+
